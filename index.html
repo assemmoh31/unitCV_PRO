@@ -50,6 +50,17 @@
             margin: 0; 
         }
 
+        /* --- DARK MODE SELECT FIX --- */
+        /* Forces proper contrast for dropdown options in Dark Mode */
+        option {
+            background-color: #ffffff;
+            color: #1e293b;
+        }
+        .dark option {
+            background-color: #1e293b; /* Dark Slate Background */
+            color: #f1f5f9; /* Light Text */
+        }
+
         /* --- ROBUST PRINT STYLES --- */
         @media print {
             /* 1. Hide everything by default using visibility */
