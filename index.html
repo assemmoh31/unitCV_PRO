@@ -61,10 +61,24 @@
             color: #f1f5f9; /* Light Text */
         }
 
+        /* --- VIEW UTILITIES --- */
+        .view-section {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .view-section.active {
+            display: grid; /* or block depending on layout */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* --- ROBUST PRINT STYLES --- */
         @media print {
             /* 1. Hide everything by default using visibility */
-            /* This is safer than display:none for complex layouts */
             body * {
                 visibility: hidden;
             }
@@ -127,14 +141,19 @@
     <!-- Header -->
     <header class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-50">
         <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
                 <div class="bg-brand-600 text-white p-2 rounded-lg">
-                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                    <i class="fa-solid fa-layer-group"></i> 
                 </div>
                 <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">UnitCV <span class="text-brand-500">Pro</span></h1>
             </div>
             
             <div class="flex items-center space-x-4">
+                <!-- Back to Home Button (Visible only when not on home) -->
+                <button id="home-btn" onclick="switchView('home')" class="hidden text-sm font-medium text-slate-500 hover:text-brand-600 transition-colors items-center gap-2">
+                    <i class="fa-solid fa-house"></i> <span class="hidden sm:inline">Home</span>
+                </button>
+
                 <div id="auth-status" class="hidden md:flex items-center text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">
                     <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse" id="auth-dot"></span>
                     <span id="auth-text">Connecting...</span>
@@ -156,105 +175,190 @@
     </div>
 
     <!-- Main Content -->
-    <main class="flex-grow max-w-4xl mx-auto px-4 py-6 w-full grid gap-6 md:grid-cols-12">
+    <main class="flex-grow max-w-4xl mx-auto px-4 py-6 w-full relative">
         
-        <!-- Converter Section -->
-        <div id="converter-section" class="md:col-span-12 lg:col-span-7 space-y-6">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
-                <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                    <h2 class="font-semibold text-lg">Converter</h2>
-                    <select id="category-select" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-brand-500 block p-2.5 font-medium cursor-pointer">
-                        <!-- Categories populated by JS -->
-                    </select>
+        <!-- VIEW 1: HOME DASHBOARD -->
+        <div id="view-home" class="view-section active grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <!-- Unit Converter Card -->
+            <div onclick="switchView('converter')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-brand-500 dark:hover:border-brand-500 transition-all cursor-pointer group">
+                <div class="bg-brand-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-brand-600 dark:text-brand-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-arrow-right-arrow-left text-xl"></i>
                 </div>
-
-                <div class="p-6 space-y-8">
-                    <!-- From Input -->
-                    <div class="relative group">
-                        <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">From</label>
-                        <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 group-focus-within:ring-2 group-focus-within:ring-brand-500 transition-all">
-                            <input type="number" id="input-value" placeholder="0" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
-                            <div class="bg-slate-50 dark:bg-slate-700 border-l border-slate-200 dark:border-slate-600 flex items-center px-2">
-                                <!-- Responsive width: w-28 on mobile, growing to w-56 on desktop -->
-                                <select id="from-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-200 w-28 sm:w-40 md:w-56 cursor-pointer text-right pr-7">
-                                    <!-- Units populated by JS -->
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Swap Button (Visual) -->
-                    <div class="flex justify-center -my-4 relative z-10">
-                        <button id="swap-btn" class="bg-brand-600 hover:bg-brand-700 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-transform hover:rotate-180 active:scale-95">
-                            <i class="fa-solid fa-arrow-right-arrow-left text-sm"></i>
-                        </button>
-                    </div>
-
-                    <!-- To Input (Read Only for Result) -->
-                    <div class="relative group">
-                        <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">To</label>
-                        <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 bg-slate-50 dark:bg-slate-900/50">
-                            <!-- Input takes remaining space -->
-                            <input type="text" id="output-value" readonly placeholder="0" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-0 text-brand-600 dark:text-brand-400 cursor-default min-w-0">
-                            
-                            <!-- COPY BUTTON: Now a flex item (no longer absolute) -->
-                            <button onclick="window.copyResult()" class="flex items-center justify-center px-3 text-slate-400 hover:text-brand-500 transition-colors" title="Copy to Clipboard">
-                                <i id="copy-icon" class="fa-regular fa-copy"></i>
-                            </button>
-
-                            <!-- Unit Selector Container -->
-                            <div class="border-l border-slate-200 dark:border-slate-600 flex items-center px-2 bg-slate-50 dark:bg-slate-900/50">
-                                <!-- Responsive width: w-28 on mobile, growing to w-56 on desktop -->
-                                <select id="to-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-200 w-28 sm:w-40 md:w-56 cursor-pointer text-right pr-7">
-                                    <!-- Units populated by JS -->
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Unit Converter</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Convert Length, Weight, Volume, Temperature and more.</p>
             </div>
 
-            <!-- AdSense Slot 2 (Middle) -->
-            <div class="ad-slot w-full h-20 bg-gray-200 dark:bg-slate-800 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center text-gray-400 text-xs">
-                <span class="font-semibold">AdSense</span>
-                <span>Contextual Ad</span>
+            <!-- Physics Calculator Card (Active) -->
+            <div onclick="switchView('physics')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-purple-500 dark:hover:border-purple-500 transition-all cursor-pointer group relative overflow-hidden">
+                <div class="bg-purple-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-atom text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Physics</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Calculate Speed, Force, Work, Energy, and Power.</p>
+            </div>
+
+            <!-- Financial Calculator Card (Placeholder) -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-green-500 dark:hover:border-green-500 transition-all cursor-pointer group relative overflow-hidden">
+                <div class="absolute top-3 right-3 bg-green-100 text-green-600 text-[10px] font-bold px-2 py-1 rounded-full">SOON</div>
+                <div class="bg-green-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-sack-dollar text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Finance</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Loan payments, Interest rates, and Investment returns.</p>
+            </div>
+
+            <!-- Health Calculator Card (Placeholder) -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer group relative overflow-hidden">
+                <div class="absolute top-3 right-3 bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded-full">SOON</div>
+                <div class="bg-red-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-heart-pulse text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Health</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">BMI, BMR, Body Fat Percentage and Calorie needs.</p>
             </div>
         </div>
 
-        <!-- History Section -->
-        <div id="history-section" class="md:col-span-12 lg:col-span-5 h-full relative">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
-                <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
-                    <h3 class="font-semibold flex items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History
-                    </h3>
-                    <div id="history-actions" class="flex items-center gap-2">
-                        <button id="print-history" type="button" class="text-xs text-slate-500 hover:text-brand-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-400 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md transition-all flex items-center gap-1">
-                            <i class="fa-solid fa-print"></i>
-                        </button>
-                        <button id="clear-history" type="button" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md transition-all disabled:opacity-50">
-                            Clear All
-                        </button>
+        <!-- VIEW 2: UNIT CONVERTER -->
+        <div id="view-converter" class="view-section gap-6 md:grid-cols-12">
+            <!-- Converter Section -->
+            <div id="converter-section" class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg">Converter</h2>
+                        <select id="category-select" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-brand-500 block p-2.5 font-medium cursor-pointer">
+                            <!-- Categories populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="p-6 space-y-8">
+                        <!-- From Input -->
+                        <div class="relative group">
+                            <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">From</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 group-focus-within:ring-2 group-focus-within:ring-brand-500 transition-all">
+                                <input type="number" id="input-value" placeholder="0" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                <div class="bg-slate-50 dark:bg-slate-700 border-l border-slate-200 dark:border-slate-600 flex items-center px-2">
+                                    <select id="from-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-200 w-28 sm:w-40 md:w-56 cursor-pointer text-right pr-7">
+                                        <!-- Units populated by JS -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Swap Button (Visual) -->
+                        <div class="flex justify-center -my-4 relative z-10">
+                            <button id="swap-btn" class="bg-brand-600 hover:bg-brand-700 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-transform hover:rotate-180 active:scale-95">
+                                <i class="fa-solid fa-arrow-right-arrow-left text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- To Input (Read Only for Result) -->
+                        <div class="relative group">
+                            <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">To</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 bg-slate-50 dark:bg-slate-900/50">
+                                <input type="text" id="output-value" readonly placeholder="0" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-0 text-brand-600 dark:text-brand-400 cursor-default min-w-0">
+                                <button onclick="window.copyResult()" class="flex items-center justify-center px-3 text-slate-400 hover:text-brand-500 transition-colors" title="Copy to Clipboard">
+                                    <i id="copy-icon" class="fa-regular fa-copy"></i>
+                                </button>
+                                <div class="border-l border-slate-200 dark:border-slate-600 flex items-center px-2 bg-slate-50 dark:bg-slate-900/50">
+                                    <select id="to-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-200 w-28 sm:w-40 md:w-56 cursor-pointer text-right pr-7">
+                                        <!-- Units populated by JS -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div id="history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
-                    <!-- Loading State -->
-                    <div id="history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10">
-                        <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i>
+
+                <!-- AdSense Slot 2 (Middle) -->
+                <div class="ad-slot w-full h-20 bg-gray-200 dark:bg-slate-800 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center text-gray-400 text-xs">
+                    <span class="font-semibold">AdSense</span>
+                    <span>Contextual Ad</span>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div id="history-section" class="md:col-span-12 lg:col-span-5 h-full relative">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History
+                        </h3>
+                        <div id="history-actions" class="flex items-center gap-2">
+                            <button id="print-history" type="button" class="text-xs text-slate-500 hover:text-brand-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-400 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button id="clear-history" type="button" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md transition-all disabled:opacity-50">
+                                Clear All
+                            </button>
+                        </div>
                     </div>
                     
-                    <!-- Empty State -->
-                    <div id="history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10">
-                        <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
-                        <p id="history-empty-text" class="text-sm text-center">No conversions yet</p>
-                    </div>
+                    <div id="history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <!-- Loading State -->
+                        <div id="history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10">
+                            <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10">
+                            <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
+                            <p id="history-empty-text" class="text-sm text-center">No conversions yet</p>
+                        </div>
 
-                    <!-- List Items (Injected by JS) -->
-                    <div id="history-list" class="space-y-2"></div>
+                        <!-- List Items (Injected by JS) -->
+                        <div id="history-list" class="space-y-2"></div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- VIEW 3: PHYSICS CALCULATOR -->
+        <div id="view-physics" class="view-section">
+            <div class="max-w-2xl mx-auto space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-atom text-purple-500"></i> Physics
+                        </h2>
+                        <select id="physics-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-purple-500 block p-2.5 font-medium cursor-pointer w-48">
+                            <!-- Formulas populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+                        <!-- Input 1 -->
+                        <div class="space-y-2">
+                            <label id="phys-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="number" id="phys-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Input 2 -->
+                        <div class="space-y-2">
+                            <label id="phys-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="number" id="phys-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button onclick="calculatePhysics()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">
+                            Calculate Result
+                        </button>
+
+                        <!-- Result -->
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="phys-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-purple-200 dark:ring-purple-900/50 bg-purple-50 dark:bg-purple-900/20">
+                                <input type="text" id="phys-result" readonly class="flex-1 bg-transparent border-none p-4 text-2xl font-bold focus:ring-0 text-purple-600 dark:text-purple-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <footer class="mt-auto py-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -290,21 +394,10 @@
         // --- Configuration ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'unitcv-pro-dev';
         
-        // ------------------------------------------------------------------
-        // IMPORTANT: FOR GITHUB PAGES DEPLOYMENT
-        // 1. Go to your Firebase Console -> Project Settings -> General
-        // 2. Scroll down to "Your apps" and select the web app.
-        // 3. Copy the "firebaseConfig" object.
-        // 4. REPLACE the object below with your actual config.
-        // ------------------------------------------------------------------
         let firebaseConfig;
-        
         if (typeof __firebase_config !== 'undefined') {
-            // Internal AI Environment
             firebaseConfig = JSON.parse(__firebase_config);
         } else {
-            // EXTERNAL / GITHUB PAGES ENVIRONMENT
-            // YOUR KEYS:
             firebaseConfig = {
                 apiKey: "AIzaSyCFrWdI9uhF9PYwfBLSLfhjttRV0nDI6GM",
                 authDomain: "unitcv-pro.firebaseapp.com",
@@ -317,16 +410,96 @@
         }
 
         // --- Firebase Init ---
-        // Safety check to prevent crashing if keys aren't pasted yet
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- VIEW MANAGEMENT ---
+        window.switchView = function(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+                el.style.display = 'none';
+            });
+
+            const targetId = 'view-' + viewName;
+            const target = document.getElementById(targetId);
+            
+            if (target) {
+                target.style.display = (viewName === 'home') ? 'grid' : 'block';
+                if(viewName === 'converter') target.style.display = 'grid';
+                
+                setTimeout(() => target.classList.add('active'), 10);
+            }
+
+            const homeBtn = document.getElementById('home-btn');
+            if (viewName === 'home') {
+                homeBtn.classList.add('hidden');
+                homeBtn.classList.remove('flex');
+            } else {
+                homeBtn.classList.remove('hidden');
+                homeBtn.classList.add('flex');
+            }
+        };
+
+        // --- PHYSICS CALCULATOR LOGIC ---
+        const PHYSICS_DATA = {
+            speed: { name: 'Speed (v = d/t)', l1: 'Distance (m)', l2: 'Time (s)', res: 'Speed (m/s)', calc: (a,b) => a/b },
+            accel: { name: 'Acceleration (a = Δv/t)', l1: 'Change in Vel. (m/s)', l2: 'Time (s)', res: 'Accel (m/s²)', calc: (a,b) => a/b },
+            force: { name: 'Force (F = ma)', l1: 'Mass (kg)', l2: 'Accel (m/s²)', res: 'Force (N)', calc: (a,b) => a*b },
+            work: { name: 'Work (W = Fd)', l1: 'Force (N)', l2: 'Distance (m)', res: 'Work (J)', calc: (a,b) => a*b },
+            power: { name: 'Power (P = W/t)', l1: 'Work (J)', l2: 'Time (s)', res: 'Power (W)', calc: (a,b) => a/b },
+            ke: { name: 'Kinetic Energy', l1: 'Mass (kg)', l2: 'Velocity (m/s)', res: 'Energy (J)', calc: (a,b) => 0.5 * a * (b*b) }
+        };
+
+        function initPhysics() {
+            const select = document.getElementById('physics-formula');
+            Object.keys(PHYSICS_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = PHYSICS_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updatePhysicsUI);
+            updatePhysicsUI();
+        }
+
+        function updatePhysicsUI() {
+            const key = document.getElementById('physics-formula').value;
+            const data = PHYSICS_DATA[key];
+            document.getElementById('phys-label-1').textContent = data.l1;
+            document.getElementById('phys-label-2').textContent = data.l2;
+            document.getElementById('phys-label-result').textContent = data.res;
+            document.getElementById('phys-result').value = '';
+        }
+
+        window.calculatePhysics = function() {
+            const key = document.getElementById('physics-formula').value;
+            const v1 = parseFloat(document.getElementById('phys-input-1').value);
+            const v2 = parseFloat(document.getElementById('phys-input-2').value);
+            
+            if (isNaN(v1) || isNaN(v2)) {
+                document.getElementById('phys-result').value = "Invalid Input";
+                return;
+            }
+            
+            const result = PHYSICS_DATA[key].calc(v1, v2);
+            
+            // Format nicely
+            let formatted = result;
+            if (Math.abs(result) < 0.001 || Math.abs(result) > 10000) {
+                formatted = result.toExponential(3);
+            } else {
+                formatted = parseFloat(result.toFixed(4));
+            }
+            
+            document.getElementById('phys-result').value = formatted;
+        };
+
         // --- State Management ---
         let currentUser = null;
         let unsubscribeHistory = null;
-        let lastConversion = null; // Debounce mechanism
-        let currentHistoryIds = []; // Stores IDs of currently visible items for batch deletion
+        let lastConversion = null;
+        let currentHistoryIds = [];
 
         // --- Unit Data Definitions ---
         const UNIT_DATA = {
@@ -487,13 +660,18 @@
             clearHistoryBtn.addEventListener('click', handleClearHistoryClick);
             
             printHistoryBtn.addEventListener('click', () => {
-                // Focus is crucial for iframe/embed environments
                 window.focus();
                 window.print();
             });
 
             // Initial Render
             updateUnits(true);
+            
+            // Initialize View (Show Home by default)
+            switchView('home');
+            
+            // Initialize Physics
+            initPhysics();
         }
 
         function updateUnits(reset = false) {
@@ -515,7 +693,6 @@
             });
 
             if (reset) {
-                // Default selections
                 const keys = Object.keys(units);
                 if (keys.length > 1) {
                     toUnitSelect.value = keys[1];
@@ -549,30 +726,24 @@
             const catData = UNIT_DATA[category];
 
             if (catData.type === 'special') {
-                // Additive logic (Temp)
                 const baseVal = catData.units[fromUnit].toBase(val);
                 result = catData.units[toUnit].fromBase(baseVal);
             } else {
-                // Multiplicative logic
                 const fromFactor = catData.units[fromUnit].factor;
                 const toFactor = catData.units[toUnit].factor;
                 result = val * (fromFactor / toFactor);
             }
 
-            // Format Result
             let formatted = result;
             if (Math.abs(result) < 0.000001 && result !== 0) {
                 formatted = result.toExponential(4);
             } else if (Math.abs(result) > 1000000) {
                 formatted = result.toExponential(4);
             } else {
-                // Limit decimals nicely
                 formatted = parseFloat(result.toPrecision(6)); 
             }
 
             outputVal.value = formatted;
-
-            // Debounced Save to Firestore
             saveToHistory(val, fromUnit, formatted, toUnit, category);
         }
 
@@ -582,7 +753,6 @@
 
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
-                // Only save if input is valid and meaningful
                 if (inVal === '' || isNaN(inVal)) return;
 
                 const path = `artifacts/${appId}/users/${currentUser.uid}/conversion_results`;
@@ -599,7 +769,7 @@
                 } catch (err) {
                     console.error("Error saving history:", err);
                 }
-            }, 1500); // 1.5s debounce to avoid saving every keystroke
+            }, 1500);
         }
 
         // --- Authentication & Firestore ---
@@ -615,11 +785,9 @@
                 authText.textContent = "Offline Mode";
                 authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
                 
-                // Hide spinner on failure so it doesn't hang
                 historyLoading.classList.add('hidden');
                 historyEmpty.classList.remove('hidden');
                 
-                // Improved Error Display
                 let errorMsg = "Connection Failed";
                 if (error.code === 'auth/operation-not-allowed') {
                     errorMsg = "Enable Anonymous Auth<br><span class='text-[10px]'>Go to Firebase Console > Build > Authentication > Sign-in method</span>";
@@ -632,23 +800,18 @@
             }
         }
 
-        // Auth Listener
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 authText.textContent = `ID: ${user.uid.slice(0, 6)}...`;
                 authDot.className = "w-2 h-2 bg-green-500 rounded-full mr-2";
-                
                 setupHistoryListener(user.uid);
             } else {
                 currentUser = null;
                 historyList.innerHTML = '';
-                
-                // Only change text if we didn't already set a specific error (like Setup Required)
                 if (authText.textContent !== "Setup Required") {
                     authText.textContent = "Disconnected";
                     authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
-                    
                     historyLoading.classList.add('hidden');
                     historyEmpty.classList.remove('hidden');
                     historyEmptyText.textContent = "Not connected";
@@ -656,12 +819,8 @@
             }
         });
 
-        // Firestore Listener
         function setupHistoryListener(uid) {
-            // STRICT PATH: artifacts/{appId}/users/{uid}/conversion_results
             const path = `artifacts/${appId}/users/${uid}/conversion_results`;
-            
-            // NO ORDERBY in query to prevent index requirements
             const q = collection(db, path);
 
             unsubscribeHistory = onSnapshot(q, (snapshot) => {
@@ -670,16 +829,14 @@
                     historyData.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Update global ID tracking for bulk delete
                 currentHistoryIds = historyData.map(item => item.id);
 
-                // Update UI for Empty/Clear button state
                 if (currentHistoryIds.length === 0) {
                     clearHistoryBtn.disabled = true;
                     clearHistoryBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     printHistoryBtn.disabled = true;
                     printHistoryBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    historyEmptyText.textContent = "No conversions yet"; // Reset text to default
+                    historyEmptyText.textContent = "No conversions yet";
                 } else {
                     clearHistoryBtn.disabled = false;
                     clearHistoryBtn.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -687,7 +844,6 @@
                     printHistoryBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
 
-                // Sort in memory (Newest first)
                 historyData.sort((a, b) => {
                     const tA = a.timestamp?.seconds || 0;
                     const tB = b.timestamp?.seconds || 0;
@@ -699,14 +855,12 @@
             }, (error) => {
                 console.error("Snapshot error:", error);
                 historyLoading.classList.add('hidden');
-                // Likely permission error if rules aren't set
                 historyList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error. Check Permissions or Config.</div>`;
             });
         }
 
         function renderHistory(data) {
             historyList.innerHTML = '';
-            
             if (data.length === 0) {
                 historyEmpty.classList.remove('hidden');
                 return;
@@ -717,7 +871,6 @@
                 const el = document.createElement('div');
                 el.className = 'flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group border border-transparent hover:border-slate-200 dark:hover:border-slate-600';
                 
-                // Construct readable string (e.g., "10 m → 32.8 ft")
                 const fromSymbol = UNIT_DATA[item.category]?.units[item.inputUnit]?.name || item.inputUnit;
                 const toSymbol = UNIT_DATA[item.category]?.units[item.outputUnit]?.name || item.outputUnit;
 
@@ -740,7 +893,6 @@
             });
         }
 
-        // Global functions for inline HTML events
         window.deleteItem = async (docId) => {
             if (!currentUser) return;
             try {
@@ -753,25 +905,16 @@
         window.copyResult = function() {
             const output = document.getElementById('output-value');
             const icon = document.getElementById('copy-icon');
-            
             if (output.value && output.value !== '') {
-                // Modern Clipboard API, fallbacks handled by browsers usually, 
-                // but explicit execCommand is better for iframes if API fails, though API is standard now.
-                // We'll stick to navigator for simplicity as it's cleaner in modern browsers.
-                
-                // For iframe compatibility in some contexts, simple textarea hack is robust:
                 const el = document.createElement('textarea');
                 el.value = output.value;
                 document.body.appendChild(el);
                 el.select();
                 document.execCommand('copy');
                 document.body.removeChild(el);
-
-                // Animation
                 if(icon) {
                     icon.classList.remove('fa-regular', 'fa-copy');
                     icon.classList.add('fa-solid', 'fa-check', 'text-green-500');
-                    
                     setTimeout(() => {
                         icon.classList.remove('fa-solid', 'fa-check', 'text-green-500');
                         icon.classList.add('fa-regular', 'fa-copy');
@@ -783,23 +926,15 @@
         let clearConfirmTimer;
         async function handleClearHistoryClick() {
             if (!currentUser || currentHistoryIds.length === 0) return;
-
             const btn = document.getElementById('clear-history');
-            
-            // Check if already in confirmation state
             if (btn.getAttribute('data-confirming') === 'true') {
-                // Execute Deletion
                 btn.innerText = "Clearing...";
                 btn.disabled = true;
-                
                 try {
-                    // Use memory IDs to delete (No extra read required)
                     const promises = currentHistoryIds.map(id => 
                         deleteDoc(doc(db, `artifacts/${appId}/users/${currentUser.uid}/conversion_results`, id))
                     );
                     await Promise.all(promises);
-                    
-                    // Reset UI (handled mostly by onSnapshot, but let's be safe)
                     btn.innerText = "Clear All";
                     btn.removeAttribute('data-confirming');
                     btn.disabled = false;
@@ -813,12 +948,9 @@
                     }, 2000);
                 }
             } else {
-                // Enter Confirmation State
                 btn.innerText = "Confirm?";
                 btn.setAttribute('data-confirming', 'true');
-                btn.classList.add('bg-red-500', 'text-white'); // Force active style
-                
-                // Auto-reset after 3 seconds
+                btn.classList.add('bg-red-500', 'text-white');
                 clearTimeout(clearConfirmTimer);
                 clearConfirmTimer = setTimeout(() => {
                     btn.innerText = "Clear All";
@@ -828,7 +960,6 @@
             }
         }
 
-        // Start
         initUI();
         initAuth();
 
