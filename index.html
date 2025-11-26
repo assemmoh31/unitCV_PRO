@@ -8,6 +8,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Charts -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
     <!-- Tailwind Configuration for Dark Mode -->
     <script>
         tailwind.config = {
@@ -210,7 +213,7 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400">Loans, Mortgage, Interest, Salary & Savings.</p>
             </div>
 
-            <!-- Health Calculator Card (Active) -->
+            <!-- Health Calculator Card -->
             <div onclick="switchView('health')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer group relative overflow-hidden">
                 <div class="bg-red-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 mb-4 group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-heart-pulse text-xl"></i>
@@ -456,6 +459,12 @@
                                 <input type="text" id="fin-result" readonly class="flex-1 bg-transparent border-none p-4 text-2xl font-bold focus:ring-0 text-green-600 dark:text-green-400 cursor-default min-w-0" placeholder="-">
                             </div>
                         </div>
+
+                        <!-- Charts Container -->
+                        <div id="finance-chart-container" class="w-full mt-6 space-y-6">
+                            <div id="fin-chart-1" class="w-full h-64"></div>
+                            <div id="fin-chart-2" class="w-full h-64"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -687,7 +696,13 @@
             
             if (target) {
                 target.style.display = (viewName === 'home') ? 'grid' : 'grid'; 
-                setTimeout(() => target.classList.add('active'), 10);
+                setTimeout(() => {
+                    target.classList.add('active');
+                    // If specific views need resize trigger for charts
+                    if(viewName === 'finance') {
+                        if(window.lastFinanceChartData) drawFinanceCharts(window.lastFinanceChartData);
+                    }
+                }, 10);
             }
 
             const homeBtn = document.getElementById('home-btn');
@@ -712,12 +727,116 @@
 
         // --- FINANCE CALCULATOR LOGIC ---
         const FINANCE_DATA = {
-            loan: { name: 'Loan Payment', l1: 'Principal ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', res: 'Monthly Pmt ($)', inputs: 3, calc: (p, r, t) => { if(r === 0) return p / (t * 12); const i = (r / 100) / 12; const n = t * 12; return p * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); } },
-            mortgage: { name: 'Mortgage', l1: 'Home Price ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', l4: 'Down Payment ($)', res: 'Monthly Pmt ($)', inputs: 4, calc: (p, r, t, down) => { const loan = p - down; if(loan <= 0) return 0; if(r === 0) return loan / (t * 12); const i = (r / 100) / 12; const n = t * 12; return loan * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); } },
-            compound: { name: 'Compound Interest', l1: 'Initial ($)', l2: 'Rate (%/yr)', l3: 'Time (Years)', l4: 'Monthly Dep ($)', res: 'Future Value ($)', inputs: 4, calc: (p, r, t, pmt) => { const n = 12; const rate = r / 100; const totalPeriods = t * 12; const futurePrincipal = p * Math.pow(1 + rate/n, totalPeriods); const futureDeposits = pmt * (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); return futurePrincipal + futureDeposits; } },
-            salary: { name: 'Simple Net Salary', l1: 'Gross Annual ($)', l2: 'Tax Rate (%)', l3: 'Deductions ($)', res: 'Net Monthly ($)', inputs: 3, calc: (gross, tax, ded) => { const taxAmt = gross * (tax / 100); const netAnnual = gross - taxAmt - ded; return netAnnual / 12; } },
-            savings_goal: { name: 'Savings Goal', l1: 'Goal Amount ($)', l2: 'Current Saved ($)', l3: 'Rate (%/yr)', l4: 'Years to Grow', res: 'Monthly Need ($)', inputs: 4, calc: (goal, current, r, t) => { const n = 12; const rate = r / 100; const totalPeriods = t * 12; const fvPrincipal = current * Math.pow(1 + rate/n, totalPeriods); const remainingGoal = goal - fvPrincipal; if(remainingGoal <= 0) return 0; const denominator = (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); return remainingGoal / denominator; } },
-            roi: { name: 'Investment Return', l1: 'Invested ($)', l2: 'Returned ($)', res: 'ROI (%)', inputs: 2, calc: (inv, ret) => ((ret - inv) / inv) * 100 }
+            loan: { 
+                name: 'Loan Payment', 
+                l1: 'Principal ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', 
+                res: 'Monthly Pmt ($)', inputs: 3, 
+                calc: (p, r, t) => { 
+                    if(r === 0) return p / (t * 12); 
+                    const i = (r / 100) / 12; const n = t * 12; 
+                    return p * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); 
+                },
+                getChartData: (p, r, t, res) => {
+                    // Pie Chart: Principal vs Interest
+                    const totalPaid = res * t * 12;
+                    let totalInterest = totalPaid - p;
+                    // FIX: Prevent negative values for Pie Chart
+                    if (totalInterest < 0) totalInterest = 0;
+                    return { type: 'Pie', data: [['Type', 'Amount'], ['Principal', p], ['Interest', totalInterest]], title: 'Total Cost Breakdown' };
+                }
+            },
+            mortgage: { 
+                name: 'Mortgage', 
+                l1: 'Home Price ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', l4: 'Down Payment ($)', 
+                res: 'Monthly Pmt ($)', inputs: 4, 
+                calc: (p, r, t, down) => { 
+                    const loan = p - down; if(loan <= 0) return 0; 
+                    if(r === 0) return loan / (t * 12); 
+                    const i = (r / 100) / 12; const n = t * 12; 
+                    return loan * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); 
+                },
+                getChartData: (p, r, t, down, res) => {
+                    const loan = p - down;
+                    const totalPaid = res * t * 12;
+                    let totalInterest = totalPaid - loan;
+                    // FIX: Prevent negative values for Pie Chart
+                    if (totalInterest < 0) totalInterest = 0;
+                    return { type: 'Pie', data: [['Type', 'Amount'], ['Down Payment', down], ['Loan Principal', loan], ['Total Interest', totalInterest]], title: 'Mortgage Cost Breakdown' };
+                }
+            },
+            compound: { 
+                name: 'Compound Interest', 
+                l1: 'Initial ($)', l2: 'Rate (%/yr)', l3: 'Time (Years)', l4: 'Monthly Dep ($)', 
+                res: 'Future Value ($)', inputs: 4, 
+                calc: (p, r, t, pmt) => { 
+                    const n = 12; const rate = r / 100; const totalPeriods = t * 12; 
+                    const fp = p * Math.pow(1 + rate/n, totalPeriods); 
+                    const fd = pmt * (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); 
+                    return fp + fd; 
+                },
+                getChartData: (p, r, t, pmt, res) => {
+                    // Line Chart: Growth Over Time
+                    const rows = [['Year', 'Balance']];
+                    const n = 12; const rate = r/100;
+                    for(let y=0; y<=t; y++) {
+                        const periods = y*12;
+                        const bal = (p * Math.pow(1+rate/n, periods)) + (pmt * (Math.pow(1+rate/n, periods)-1)/(rate/n));
+                        rows.push([y.toString(), bal]);
+                    }
+                    return { type: 'Line', data: rows, title: 'Growth Over Time' };
+                }
+            },
+            salary: { 
+                name: 'Simple Net Salary', 
+                l1: 'Gross Annual ($)', l2: 'Tax Rate (%)', l3: 'Deductions ($)', 
+                res: 'Net Monthly ($)', inputs: 3, 
+                calc: (gross, tax, ded) => { 
+                    const taxAmt = gross * (tax / 100); 
+                    const netAnnual = gross - taxAmt - ded; 
+                    return netAnnual / 12; 
+                },
+                getChartData: (gross, tax, ded, res) => {
+                    const taxAmt = gross * (tax/100);
+                    let netAnnual = res * 12;
+                    // FIX: Prevent negative values for Pie Chart
+                    if (netAnnual < 0) netAnnual = 0;
+                    return { type: 'Pie', data: [['Type', 'Amount'], ['Net Pay', netAnnual], ['Tax', taxAmt], ['Deductions', ded]], title: 'Annual Salary Breakdown' };
+                }
+            },
+            savings_goal: { 
+                name: 'Savings Goal', 
+                l1: 'Goal Amount ($)', l2: 'Current Saved ($)', l3: 'Rate (%/yr)', l4: 'Years to Grow', 
+                res: 'Monthly Need ($)', inputs: 4, 
+                calc: (goal, current, r, t) => { 
+                    const n = 12; const rate = r / 100; const totalPeriods = t * 12; 
+                    const fvPrincipal = current * Math.pow(1 + rate/n, totalPeriods); 
+                    const remaining = goal - fvPrincipal; if(remaining <= 0) return 0; 
+                    const denom = (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); 
+                    return remaining / denom; 
+                },
+                getChartData: (goal, current, r, t, res) => {
+                    // Line Chart: Projected Growth towards Goal
+                    const rows = [['Year', 'Balance', 'Goal']];
+                    const n = 12; const rate = r/100;
+                    for(let y=0; y<=t; y++) {
+                        const periods = y*12;
+                        const bal = (current * Math.pow(1+rate/n, periods)) + (res * (Math.pow(1+rate/n, periods)-1)/(rate/n));
+                        rows.push([y.toString(), bal, goal]);
+                    }
+                    return { type: 'Line', data: rows, title: 'Progress to Goal' };
+                }
+            },
+            roi: { 
+                name: 'Investment Return', 
+                l1: 'Invested ($)', l2: 'Returned ($)', 
+                res: 'ROI (%)', inputs: 2, 
+                calc: (inv, ret) => ((ret - inv) / inv) * 100,
+                getChartData: (inv, ret, res) => {
+                    const profit = ret - inv;
+                    const isLoss = profit < 0;
+                    return { type: 'Bar', data: [['Type', 'Amount', { role: 'style' }], ['Invested', inv, '#3b82f6'], [isLoss ? 'Loss' : 'Profit', Math.abs(profit), isLoss ? '#ef4444' : '#22c55e']], title: 'ROI Analysis' };
+                }
+            }
         };
 
         // --- HEALTH CALCULATOR LOGIC ---
@@ -739,6 +858,64 @@
             }, format: (v) => v }
         };
 
+        // --- CHART LOGIC ---
+        function initCharts() {
+            google.charts.load('current', {'packages':['corechart']});
+            // Resize handling
+            window.addEventListener('resize', () => {
+                if(window.lastFinanceChartData && document.getElementById('view-finance').style.display !== 'none') {
+                    drawFinanceCharts(window.lastFinanceChartData);
+                }
+            });
+        }
+
+        function drawFinanceCharts(chartData) {
+            if(!chartData || !google.visualization) return;
+            window.lastFinanceChartData = chartData; // Cache for resize
+
+            const data = google.visualization.arrayToDataTable(chartData.data);
+            const options = {
+                title: chartData.title,
+                backgroundColor: 'transparent',
+                titleTextStyle: { color: '#64748b', fontSize: 14 },
+                legend: { position: 'bottom', textStyle: { color: '#64748b' } },
+                width: '100%',
+                height: '100%',
+                chartArea: { width: '85%', height: '75%' }
+            };
+
+            // Dark mode overrides
+            if(document.documentElement.classList.contains('dark')) {
+                options.titleTextStyle.color = '#cbd5e1';
+                options.legend.textStyle.color = '#cbd5e1';
+                options.hAxis = { textStyle: { color: '#cbd5e1' } };
+                options.vAxis = { textStyle: { color: '#cbd5e1' } };
+            }
+
+            const container1 = document.getElementById('fin-chart-1');
+            const container2 = document.getElementById('fin-chart-2');
+            container1.innerHTML = ''; container2.innerHTML = ''; // Clear previous
+
+            let chart;
+            if (chartData.type === 'Pie') {
+                chart = new google.visualization.PieChart(container1);
+                // Hide second container if not needed
+                container2.style.display = 'none';
+            } else if (chartData.type === 'Line') {
+                chart = new google.visualization.LineChart(container1);
+                container2.style.display = 'none';
+            } else if (chartData.type === 'Bar') {
+                chart = new google.visualization.ColumnChart(container1);
+                container2.style.display = 'none';
+            }
+
+            if(chart) {
+                container1.style.display = 'block';
+                chart.draw(data, options);
+            }
+        }
+
+        // --- Init & Auth ---
         function initPhysics() {
             const select = document.getElementById('physics-formula');
             Object.keys(PHYSICS_DATA).forEach(key => {
@@ -798,6 +975,9 @@
 
             document.getElementById('fin-label-result').textContent = data.res;
             document.getElementById('fin-result').value = '';
+            // Clear charts on view change
+            document.getElementById('fin-chart-1').innerHTML = '';
+            document.getElementById('fin-chart-2').innerHTML = '';
         }
 
         function initHealth() {
@@ -887,6 +1067,12 @@
             const formatted = parseFloat(result.toFixed(2)); 
 
             document.getElementById('fin-result').value = formatted;
+
+            // CHART GENERATION
+            if (data.getChartData) {
+                const chartData = data.getChartData(v1, v2, v3, v4, result);
+                google.charts.setOnLoadCallback(() => drawFinanceCharts(chartData));
+            }
 
             let inputStr = `${v1}, ${v2}`;
             if (data.inputs >= 3) inputStr += `, ${v3}`;
@@ -1059,6 +1245,7 @@
             initPhysics();
             initFinance();
             initHealth();
+            initCharts(); // Initialize Google Charts
             
             // Fetch Currency Rates
             fetchCurrencyRates();
