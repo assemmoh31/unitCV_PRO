@@ -283,7 +283,7 @@
             firebaseConfig = JSON.parse(__firebase_config);
         } else {
             // EXTERNAL / GITHUB PAGES ENVIRONMENT
-            // PASTE YOUR KEYS HERE:
+            // YOUR KEYS:
             firebaseConfig = {
                 apiKey: "AIzaSyCFrWdI9uhF9PYwfBLSLfhjttRV0nDI6GM",
                 authDomain: "unitcv-pro.firebaseapp.com",
@@ -583,20 +583,6 @@
 
         // --- Authentication & Firestore ---
         async function initAuth() {
-            // 1. SMART CHECK: Detect if still using placeholders in production/local environment
-            if (firebaseConfig.apiKey === "PASTE_YOUR_API_KEY_HERE") {
-                console.warn("Firebase keys are missing.");
-                authText.textContent = "Setup Required";
-                authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
-                
-                // Show instructive error instead of generic "Not Connected"
-                historyLoading.classList.add('hidden');
-                historyEmpty.classList.remove('hidden');
-                historyEmptyText.innerHTML = `<span class="text-red-500 font-bold block mb-1">Setup Required</span>
-                                              <span class="text-xs">Open this file in an editor and<br>paste your Firebase Keys.</span>`;
-                return; // Stop here
-            }
-
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
