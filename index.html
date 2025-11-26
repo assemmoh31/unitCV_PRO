@@ -12,7 +12,1745 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     
     <!-- Tailwind Configuration for Dark Mode -->
+    <script><!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnitCV Pro - Universal Converter</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Charts (Added 'gauge' package) -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <!-- Tailwind Configuration for Dark Mode -->
     <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        /* Hide number input arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        /* --- DARK MODE SELECT FIX --- */
+        /* Forces proper contrast for dropdown options in Dark Mode */
+        option {
+            background-color: #ffffff;
+            color: #1e293b;
+        }
+        .dark option {
+            background-color: #1e293b; /* Dark Slate Background */
+            color: #f1f5f9; /* Light Text */
+        }
+
+        /* --- VIEW UTILITIES --- */
+        .view-section {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .view-section.active {
+            display: grid; /* or block depending on layout */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- ROBUST PRINT STYLES --- */
+        @media print {
+            /* 1. Hide everything by default using visibility */
+            body * {
+                visibility: hidden;
+            }
+
+            /* 2. Make the history sections visible (whichever is active in DOM) */
+            #history-section, #history-section *, 
+            #phys-history-section, #phys-history-section *,
+            #fin-history-section, #fin-history-section *,
+            #health-history-section, #health-history-section * {
+                visibility: visible;
+            }
+
+            /* 3. Position the history section at the very top of the printed page */
+            #history-section, #phys-history-section, #fin-history-section, #health-history-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                height: auto !important;
+                max-height: none !important;
+                background: white !important;
+                color: black !important;
+            }
+
+            /* 4. Ensure the container expands fully */
+            #history-container, #phys-history-container, #fin-history-container, #health-history-container {
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            /* 5. Hide the action buttons inside the visible section */
+            #history-actions, #phys-history-actions, #fin-history-actions, #health-history-actions,
+            .fa-trash-can, button[id$="clear-history"] {
+                display: none !important;
+            }
+
+            /* 6. Formatting fixes for print */
+            body { 
+                background: white; 
+                height: auto;
+                overflow: visible;
+            }
+            
+            /* Add a print-only title */
+            #history-section::before, #phys-history-section::before, #fin-history-section::before, #health-history-section::before {
+                content: "Calculation History Report";
+                display: block;
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                text-align: center;
+                border-bottom: 2px solid #eee;
+                padding-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
+                <div class="bg-brand-600 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-layer-group"></i> 
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">UnitCV <span class="text-brand-500">Pro</span></h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Back to Home Button (Visible only when not on home) -->
+                <button id="home-btn" onclick="switchView('home')" class="hidden text-sm font-medium text-slate-500 hover:text-brand-600 transition-colors items-center gap-2">
+                    <i class="fa-solid fa-house"></i> <span class="hidden sm:inline">Home</span>
+                </button>
+
+                <div id="auth-status" class="hidden md:flex items-center text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">
+                    <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse" id="auth-dot"></span>
+                    <span id="auth-text">Connecting...</span>
+                </div>
+                <button id="theme-toggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- AdSense Slot 1 (Header) -->
+    <div class="ad-slot max-w-4xl mx-auto px-4 mt-4">
+        <div class="w-full h-24 bg-gray-200 dark:bg-slate-800 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center text-gray-400 text-sm">
+            <span class="font-semibold">Google AdSense</span>
+            <span>Header Banner (Responsive)</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-4xl mx-auto px-4 py-6 w-full relative">
+        
+        <!-- VIEW 1: HOME DASHBOARD -->
+        <div id="view-home" class="view-section active grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <!-- Unit Converter Card -->
+            <div onclick="switchView('converter')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-brand-500 dark:hover:border-brand-500 transition-all cursor-pointer group">
+                <div class="bg-brand-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-brand-600 dark:text-brand-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-arrow-right-arrow-left text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Unit Converter</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Currency, Length, Weight, Volume, Temperature.</p>
+            </div>
+
+            <!-- Physics Calculator Card -->
+            <div onclick="switchView('physics')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-purple-500 dark:hover:border-purple-500 transition-all cursor-pointer group relative overflow-hidden">
+                <div class="bg-purple-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-atom text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Physics</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Calculate Speed, Force, Work, Energy, and Power.</p>
+            </div>
+
+            <!-- Financial Calculator Card -->
+            <div onclick="switchView('finance')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-green-500 dark:hover:border-green-500 transition-all cursor-pointer group relative overflow-hidden">
+                <div class="bg-green-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-sack-dollar text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Finance</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Loans, Mortgage, Interest, Salary & Savings.</p>
+            </div>
+
+            <!-- Health Calculator Card -->
+            <div onclick="switchView('health')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer group relative overflow-hidden">
+                <div class="bg-red-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-heart-pulse text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Health</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">BMI, BMR, Body Fat Percentage and Calorie needs.</p>
+            </div>
+        </div>
+
+        <!-- VIEW 2: UNIT CONVERTER -->
+        <div id="view-converter" class="view-section gap-6 md:grid-cols-12">
+            <!-- Converter Section -->
+            <div id="converter-section" class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg">Converter</h2>
+                        <select id="category-select" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-brand-500 block p-2.5 font-medium cursor-pointer">
+                            <!-- Categories populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="p-6 space-y-8">
+                        <!-- From Input -->
+                        <div class="relative group">
+                            <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">From</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 group-focus-within:ring-2 group-focus-within:ring-brand-500 transition-all">
+                                <input type="number" id="input-value" placeholder="0" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                <div class="bg-slate-50 dark:bg-slate-700 border-l border-slate-200 dark:border-slate-600 flex items-center px-2">
+                                    <select id="from-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-200 w-28 sm:w-40 md:w-56 cursor-pointer text-right pr-7">
+                                        <!-- Units populated by JS -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Swap Button (Visual) -->
+                        <div class="flex justify-center -my-4 relative z-10">
+                            <button id="swap-btn" class="bg-brand-600 hover:bg-brand-700 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-transform hover:rotate-180 active:scale-95">
+                                <i class="fa-solid fa-arrow-right-arrow-left text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- To Input (Read Only for Result) -->
+                        <div class="relative group">
+                            <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">To</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 bg-slate-50 dark:bg-slate-900/50">
+                                <input type="text" id="output-value" readonly placeholder="0" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-0 text-brand-600 dark:text-brand-400 cursor-default min-w-0">
+                                <button onclick="window.copyResult()" class="flex items-center justify-center px-3 text-slate-400 hover:text-brand-500 transition-colors" title="Copy to Clipboard">
+                                    <i id="copy-icon" class="fa-regular fa-copy"></i>
+                                </button>
+                                <div class="border-l border-slate-200 dark:border-slate-600 flex items-center px-2 bg-slate-50 dark:bg-slate-900/50">
+                                    <select id="to-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-200 w-28 sm:w-40 md:w-56 cursor-pointer text-right pr-7">
+                                        <!-- Units populated by JS -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AdSense Slot 2 (Middle) -->
+                <div class="ad-slot w-full h-20 bg-gray-200 dark:bg-slate-800 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center text-gray-400 text-xs">
+                    <span class="font-semibold">AdSense</span>
+                    <span>Contextual Ad</span>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div id="history-section" class="md:col-span-12 lg:col-span-5 h-full relative">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History
+                        </h3>
+                        <div id="history-actions" class="flex items-center gap-2">
+                            <button id="print-history" type="button" class="text-xs text-slate-500 hover:text-brand-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-400 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button id="clear-history" type="button" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md transition-all disabled:opacity-50">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <!-- Loading State -->
+                        <div id="history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10">
+                            <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10">
+                            <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
+                            <p id="history-empty-text" class="text-sm text-center">No conversions yet</p>
+                        </div>
+
+                        <!-- List Items (Injected by JS) -->
+                        <div id="history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: PHYSICS CALCULATOR -->
+        <div id="view-physics" class="view-section gap-6 md:grid-cols-12">
+            <!-- Physics Calculator Section -->
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-atom text-purple-500"></i> Physics
+                        </h2>
+                        <select id="physics-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-purple-500 block p-2.5 font-medium cursor-pointer w-48">
+                            <!-- Formulas populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+                        <!-- Input 1 -->
+                        <div class="space-y-2">
+                            <label id="phys-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="number" id="phys-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Input 2 -->
+                        <div class="space-y-2">
+                            <label id="phys-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="number" id="phys-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button onclick="calculatePhysics()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">
+                            Calculate Result
+                        </button>
+
+                        <!-- Result -->
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="phys-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-purple-200 dark:ring-purple-900/50 bg-purple-50 dark:bg-purple-900/20">
+                                <input type="text" id="phys-result" readonly class="flex-1 bg-transparent border-none p-4 text-2xl font-bold focus:ring-0 text-purple-600 dark:text-purple-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physics History Section -->
+            <div id="phys-history-section" class="md:col-span-12 lg:col-span-5 h-full relative">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History
+                        </h3>
+                        <div id="phys-history-actions" class="flex items-center gap-2">
+                            <button id="phys-print-history" type="button" class="text-xs text-slate-500 hover:text-purple-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-purple-400 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button id="phys-clear-history" type="button" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md transition-all disabled:opacity-50">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="phys-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <!-- Loading State -->
+                        <div id="phys-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10">
+                            <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="phys-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10">
+                            <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
+                            <p id="phys-history-empty-text" class="text-sm text-center">No calculations yet</p>
+                        </div>
+
+                        <!-- List Items -->
+                        <div id="phys-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 4: FINANCIAL CALCULATOR -->
+        <div id="view-finance" class="view-section gap-6 md:grid-cols-12">
+            <!-- Finance Calculator Section -->
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-sack-dollar text-green-500"></i> Finance
+                        </h2>
+                        <select id="finance-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-green-500 block p-2.5 font-medium cursor-pointer w-48">
+                            <!-- Formulas populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+                        <!-- Input 1 -->
+                        <div class="space-y-2">
+                            <label id="fin-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="number" id="fin-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-green-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Input 2 -->
+                        <div class="space-y-2">
+                            <label id="fin-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="number" id="fin-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-green-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Input 3 (Conditional) -->
+                        <div id="fin-input-group-3" class="space-y-2">
+                            <label id="fin-label-3" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 3</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="number" id="fin-input-3" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-green-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Input 4 (Conditional) -->
+                        <div id="fin-input-group-4" class="space-y-2 hidden">
+                            <label id="fin-label-4" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 4</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="number" id="fin-input-4" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-green-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button onclick="calculateFinance()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">
+                            Calculate Result
+                        </button>
+
+                        <!-- Result -->
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="fin-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-green-200 dark:ring-green-900/50 bg-green-50 dark:bg-green-900/20">
+                                <input type="text" id="fin-result" readonly class="flex-1 bg-transparent border-none p-4 text-2xl font-bold focus:ring-0 text-green-600 dark:text-green-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+
+                        <!-- Charts Container -->
+                        <div id="finance-chart-container" class="w-full mt-6 space-y-6">
+                            <div id="fin-chart-1" class="w-full h-64"></div>
+                            <div id="fin-chart-2" class="w-full h-64"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finance History Section -->
+            <div id="fin-history-section" class="md:col-span-12 lg:col-span-5 h-full relative">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History
+                        </h3>
+                        <div id="fin-history-actions" class="flex items-center gap-2">
+                            <button id="fin-print-history" type="button" class="text-xs text-slate-500 hover:text-green-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-green-400 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button id="fin-clear-history" type="button" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md transition-all disabled:opacity-50">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="fin-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <!-- Loading State -->
+                        <div id="fin-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10">
+                            <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="fin-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10">
+                            <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
+                            <p id="fin-history-empty-text" class="text-sm text-center">No calculations yet</p>
+                        </div>
+
+                        <!-- List Items -->
+                        <div id="fin-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 5: HEALTH CALCULATOR -->
+        <div id="view-health" class="view-section gap-6 md:grid-cols-12">
+            <!-- Health Calculator Section -->
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-heart-pulse text-red-500"></i> Health
+                        </h2>
+                        <select id="health-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-red-500 block p-2.5 font-medium cursor-pointer w-48">
+                            <!-- Formulas populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+                        <!-- Special Inputs -->
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div id="health-gender-group">
+                                <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</label>
+                                <select id="health-gender" class="w-full bg-slate-50 dark:bg-slate-700 border-none p-3 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500">
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                            <div id="health-activity-group" style="display:none;">
+                                <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</label>
+                                <select id="health-activity" class="w-full bg-slate-50 dark:bg-slate-700 border-none p-3 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500">
+                                    <option value="1.2">Sedentary</option>
+                                    <option value="1.375">Light Activity</option>
+                                    <option value="1.55">Moderate Activity</option>
+                                    <option value="1.725">Very Active</option>
+                                    <option value="1.9">Extra Active</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Date Input (For Pregnancy) -->
+                        <div id="health-date-group" class="space-y-2 hidden">
+                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Period Date</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="date" id="health-date" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Standard Numeric Inputs -->
+                        <div id="health-inputs-container" class="space-y-4">
+                            <div id="health-input-group-1" class="space-y-2">
+                                <label id="health-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="number" id="health-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                </div>
+                            </div>
+                            <div id="health-input-group-2" class="space-y-2">
+                                <label id="health-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="number" id="health-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                </div>
+                            </div>
+                            <div id="health-input-group-3" class="space-y-2 hidden">
+                                <label id="health-label-3" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 3</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="number" id="health-input-3" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                </div>
+                            </div>
+                            <div id="health-input-group-4" class="space-y-2 hidden">
+                                <label id="health-label-4" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 4</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="number" id="health-input-4" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button onclick="calculateHealth()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">
+                            Calculate Result
+                        </button>
+
+                        <!-- Result -->
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="health-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-red-200 dark:ring-red-900/50 bg-red-50 dark:bg-red-900/20">
+                                <input type="text" id="health-result" readonly class="flex-1 bg-transparent border-none p-4 text-xl font-bold focus:ring-0 text-red-600 dark:text-red-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+
+                        <!-- Health Charts Container -->
+                        <div id="health-chart-container" class="w-full mt-6 space-y-6">
+                            <div id="health-chart-1" class="w-full h-64"></div>
+                            <div id="health-chart-2" class="w-full h-64"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health History Section -->
+            <div id="health-history-section" class="md:col-span-12 lg:col-span-5 h-full relative">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History
+                        </h3>
+                        <div id="health-history-actions" class="flex items-center gap-2">
+                            <button id="health-print-history" type="button" class="text-xs text-slate-500 hover:text-red-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-red-400 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button id="health-clear-history" type="button" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md transition-all disabled:opacity-50">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="health-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <!-- Loading State -->
+                        <div id="health-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10">
+                            <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="health-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10">
+                            <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
+                            <p id="health-history-empty-text" class="text-sm text-center">No calculations yet</p>
+                        </div>
+
+                        <!-- List Items -->
+                        <div id="health-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="mt-auto py-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div class="max-w-4xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-xs text-slate-400">© 2025 UnitCV Pro. Securely powered by Firebase.</p>
+            
+            <!-- AdSense Slot 3 (Footer) -->
+            <div class="ad-slot w-full md:w-1/3 h-16 bg-gray-200 dark:bg-slate-800 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded flex items-center justify-center text-gray-400 text-[10px]">
+                Ad Footer
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            deleteDoc, 
+            doc, 
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Configuration ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'unitcv-pro-dev';
+        
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            firebaseConfig = {
+                apiKey: "AIzaSyCFrWdI9uhF9PYwfBLSLfhjttRV0nDI6GM",
+                authDomain: "unitcv-pro.firebaseapp.com",
+                projectId: "unitcv-pro",
+                storageBucket: "unitcv-pro.firebasestorage.app",
+                messagingSenderId: "130030967254",
+                appId: "1:130030967254:web:1c38ded19fdf50f589ac77",
+                measurementId: "G-23S89JVSM3"
+            };
+        }
+
+        // --- Firebase Init ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- VIEW MANAGEMENT ---
+        window.switchView = function(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+                el.style.display = 'none';
+            });
+
+            const targetId = 'view-' + viewName;
+            const target = document.getElementById(targetId);
+            
+            if (target) {
+                target.style.display = (viewName === 'home') ? 'grid' : 'grid'; 
+                setTimeout(() => {
+                    target.classList.add('active');
+                    // Resize triggers
+                    if(viewName === 'finance' && window.lastFinanceChartData) drawFinanceCharts(window.lastFinanceChartData);
+                    if(viewName === 'health' && window.lastHealthChartData) drawHealthCharts(window.lastHealthChartData);
+                }, 10);
+            }
+
+            const homeBtn = document.getElementById('home-btn');
+            if (viewName === 'home') {
+                homeBtn.classList.add('hidden');
+                homeBtn.classList.remove('flex');
+            } else {
+                homeBtn.classList.remove('hidden');
+                homeBtn.classList.add('flex');
+            }
+        };
+
+        // --- PHYSICS CALCULATOR LOGIC ---
+        const PHYSICS_DATA = {
+            speed: { name: 'Speed', l1: 'Dist (m)', l2: 'Time (s)', res: 'Speed (m/s)', calc: (a,b) => a/b },
+            accel: { name: 'Acceleration', l1: 'Δ Vel (m/s)', l2: 'Time (s)', res: 'Accel (m/s²)', calc: (a,b) => a/b },
+            force: { name: 'Force', l1: 'Mass (kg)', l2: 'Accel (m/s²)', res: 'Force (N)', calc: (a,b) => a*b },
+            work: { name: 'Work', l1: 'Force (N)', l2: 'Dist (m)', res: 'Work (J)', calc: (a,b) => a*b },
+            power: { name: 'Power', l1: 'Work (J)', l2: 'Time (s)', res: 'Power (W)', calc: (a,b) => a/b },
+            ke: { name: 'Kinetic Energy', l1: 'Mass (kg)', l2: 'Vel (m/s)', res: 'Energy (J)', calc: (a,b) => 0.5 * a * (b*b) }
+        };
+
+        // --- FINANCE CALCULATOR LOGIC ---
+        const FINANCE_DATA = {
+            loan: { 
+                name: 'Loan Payment', 
+                l1: 'Principal ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', 
+                res: 'Monthly Pmt ($)', inputs: 3, 
+                calc: (p, r, t) => { 
+                    if(r === 0) return p / (t * 12); 
+                    const i = (r / 100) / 12; const n = t * 12; 
+                    return p * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); 
+                },
+                getChartData: (p, r, t, res) => {
+                    const totalPaid = res * t * 12;
+                    let totalInterest = totalPaid - p;
+                    if (totalInterest < 0) totalInterest = 0;
+                    return { type: 'Pie', data: [['Type', 'Amount'], ['Principal', p], ['Interest', totalInterest]], title: 'Total Cost Breakdown' };
+                }
+            },
+            mortgage: { 
+                name: 'Mortgage', 
+                l1: 'Home Price ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', l4: 'Down Payment ($)', 
+                res: 'Monthly Pmt ($)', inputs: 4, 
+                calc: (p, r, t, down) => { 
+                    const loan = p - down; if(loan <= 0) return 0; 
+                    if(r === 0) return loan / (t * 12); 
+                    const i = (r / 100) / 12; const n = t * 12; 
+                    return loan * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); 
+                },
+                getChartData: (p, r, t, down, res) => {
+                    const loan = p - down;
+                    const totalPaid = res * t * 12;
+                    let totalInterest = totalPaid - loan;
+                    if (totalInterest < 0) totalInterest = 0;
+                    return { type: 'Pie', data: [['Type', 'Amount'], ['Down Payment', down], ['Loan Principal', loan], ['Total Interest', totalInterest]], title: 'Mortgage Cost Breakdown' };
+                }
+            },
+            compound: { 
+                name: 'Compound Interest', 
+                l1: 'Initial ($)', l2: 'Rate (%/yr)', l3: 'Time (Years)', l4: 'Monthly Dep ($)', 
+                res: 'Future Value ($)', inputs: 4, 
+                calc: (p, r, t, pmt) => { 
+                    const n = 12; const rate = r / 100; const totalPeriods = t * 12; 
+                    const fp = p * Math.pow(1 + rate/n, totalPeriods); 
+                    const fd = pmt * (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); 
+                    return fp + fd; 
+                },
+                getChartData: (p, r, t, pmt, res) => {
+                    const rows = [['Year', 'Balance']];
+                    const n = 12; const rate = r/100;
+                    for(let y=0; y<=t; y++) {
+                        const periods = y*12;
+                        const bal = (p * Math.pow(1+rate/n, periods)) + (pmt * (Math.pow(1+rate/n, periods)-1)/(rate/n));
+                        rows.push([y.toString(), bal]);
+                    }
+                    return { type: 'Line', data: rows, title: 'Growth Over Time' };
+                }
+            },
+            salary: { 
+                name: 'Simple Net Salary', 
+                l1: 'Gross Annual ($)', l2: 'Tax Rate (%)', l3: 'Deductions ($)', 
+                res: 'Net Monthly ($)', inputs: 3, 
+                calc: (gross, tax, ded) => { 
+                    const taxAmt = gross * (tax / 100); 
+                    const netAnnual = gross - taxAmt - ded; 
+                    return netAnnual / 12; 
+                },
+                getChartData: (gross, tax, ded, res) => {
+                    const taxAmt = gross * (tax/100);
+                    let netAnnual = res * 12;
+                    if (netAnnual < 0) netAnnual = 0;
+                    return { type: 'Pie', data: [['Type', 'Amount'], ['Net Pay', netAnnual], ['Tax', taxAmt], ['Deductions', ded]], title: 'Annual Salary Breakdown' };
+                }
+            },
+            savings_goal: { 
+                name: 'Savings Goal', 
+                l1: 'Goal Amount ($)', l2: 'Current Saved ($)', l3: 'Rate (%/yr)', l4: 'Years to Grow', 
+                res: 'Monthly Need ($)', inputs: 4, 
+                calc: (goal, current, r, t) => { 
+                    const n = 12; const rate = r / 100; const totalPeriods = t * 12; 
+                    const fvPrincipal = current * Math.pow(1 + rate/n, totalPeriods); 
+                    const remaining = goal - fvPrincipal; if(remaining <= 0) return 0; 
+                    const denom = (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); 
+                    return remaining / denom; 
+                },
+                getChartData: (goal, current, r, t, res) => {
+                    const rows = [['Year', 'Balance', 'Goal']];
+                    const n = 12; const rate = r/100;
+                    for(let y=0; y<=t; y++) {
+                        const periods = y*12;
+                        const bal = (current * Math.pow(1+rate/n, periods)) + (res * (Math.pow(1+rate/n, periods)-1)/(rate/n));
+                        rows.push([y.toString(), bal, goal]);
+                    }
+                    return { type: 'Line', data: rows, title: 'Progress to Goal' };
+                }
+            },
+            roi: { 
+                name: 'Investment Return', 
+                l1: 'Invested ($)', l2: 'Returned ($)', 
+                res: 'ROI (%)', inputs: 2, 
+                calc: (inv, ret) => ((ret - inv) / inv) * 100,
+                getChartData: (inv, ret, res) => {
+                    const profit = ret - inv;
+                    const isLoss = profit < 0;
+                    return { type: 'Bar', data: [['Type', 'Amount', { role: 'style' }], ['Invested', inv, '#3b82f6'], [isLoss ? 'Loss' : 'Profit', Math.abs(profit), isLoss ? '#ef4444' : '#22c55e']], title: 'ROI Analysis' };
+                }
+            }
+        };
+
+        // --- HEALTH CALCULATOR LOGIC ---
+        const HEALTH_DATA = {
+            bmi: { 
+                name: 'BMI Calculator', l1: 'Weight (kg)', l2: 'Height (cm)', inputs: 2, showGender: false, showActivity: false, 
+                calc: (vals) => { const h = vals[1]/100; return vals[0] / (h*h); }, 
+                format: (v) => `${v.toFixed(1)} BMI`,
+                getChartData: (vals, g, act, date, res) => {
+                    // Gauge + Ranges
+                    const gauge = { type: 'Gauge', data: [['Label', 'Value'], ['BMI', parseFloat(res.toFixed(1))]], title: 'BMI Score', max: 40, redFrom: 30, redTo: 40, yellowFrom: 25, yellowTo: 30, greenFrom: 18.5, greenTo: 25 };
+                    const bar = { type: 'Bar', data: [['Category', 'BMI'], ['Underweight', 18.5], ['Normal', 24.9], ['Overweight', 29.9], ['You', parseFloat(res.toFixed(1))]], title: 'BMI Comparison' };
+                    return [gauge, bar];
+                }
+            },
+            bmr: { 
+                name: 'BMR (Mifflin-St Jeor)', l1: 'Weight (kg)', l2: 'Height (cm)', l3: 'Age', inputs: 3, showGender: true, showActivity: false, 
+                calc: (vals, g) => { const s = g === 'male' ? 5 : -161; return (10*vals[0]) + (6.25*vals[1]) - (5*vals[2]) + s; }, 
+                format: (v) => `${Math.round(v)} kcal/day`,
+                getChartData: (vals, g, act, date, res) => {
+                    // Just BMR is a single value, lets verify user expectations. Usually just needs result.
+                    return null; 
+                }
+            },
+            tdee: { 
+                name: 'Calorie Intake (TDEE)', l1: 'Weight (kg)', l2: 'Height (cm)', l3: 'Age', inputs: 3, showGender: true, showActivity: true, 
+                calc: (vals, g, act) => { const s = g === 'male' ? 5 : -161; const bmr = (10*vals[0]) + (6.25*vals[1]) - (5*vals[2]) + s; return bmr * act; }, 
+                format: (v) => `${Math.round(v)} kcal/day`,
+                getChartData: (vals, g, act, date, res) => {
+                    const s = g === 'male' ? 5 : -161;
+                    const bmr = (10*vals[0]) + (6.25*vals[1]) - (5*vals[2]) + s;
+                    const burn = res - bmr;
+                    const pie = { type: 'Pie', data: [['Source', 'Calories'], ['BMR (Exist)', bmr], ['Activity (Burn)', burn]], title: 'Energy Expenditure' };
+                    const bar = { type: 'Bar', data: [['Goal', 'Calories'], ['Cut', res-500], ['Maintain', res], ['Bulk', res+500]], title: 'Goal Targets' };
+                    return [pie, bar];
+                }
+            },
+            body_fat: { 
+                name: 'Body Fat % (Navy)', l1: 'Height (cm)', l2: 'Neck (cm)', l3: 'Waist (cm)', l4: 'Hip (cm, F only)', inputs: 4, showGender: true, showActivity: false, 
+                calc: (vals, g) => {
+                    if(g === 'male') return 495 / (1.0324 - 0.19077 * Math.log10(vals[2] - vals[1]) + 0.15456 * Math.log10(vals[0])) - 450;
+                    else return 495 / (1.29579 - 0.35004 * Math.log10(vals[2] + vals[3] - vals[1]) + 0.22100 * Math.log10(vals[0])) - 450;
+                }, format: (v) => `${v.toFixed(1)}% Fat`,
+                getChartData: (vals, g, act, date, res) => {
+                    // Approx weight is not in inputs (Height, Neck, Waist). Without weight, can't calculate mass.
+                    // We will just do Gauge.
+                    const gauge = { type: 'Gauge', data: [['Label', 'Value'], ['Body Fat', parseFloat(res.toFixed(1))]], title: 'Body Fat %', max: 50, redFrom: 25, redTo: 50, yellowFrom: 18, yellowTo: 25, greenFrom: 6, greenTo: 18 };
+                    return [gauge];
+                }
+            },
+            ideal: { 
+                name: 'Ideal Weight (Devine)', l1: 'Height (cm)', inputs: 1, showGender: true, showActivity: false, 
+                calc: (vals, g) => { const hInch = vals[0] / 2.54; if(hInch < 60) return 0; const base = g === 'male' ? 50 : 45.5; return base + 2.3 * (hInch - 60); }, 
+                format: (v) => `${v.toFixed(1)} kg`,
+                getChartData: (vals, g, act, date, res) => {
+                    // Compare
+                    const bar = { type: 'Bar', data: [['Type', 'Weight (kg)'], ['Your Ideal', res]], title: 'Ideal Weight' };
+                    return [bar];
+                }
+            },
+            preg: { name: 'Pregnancy Due Date', inputs: 0, showGender: false, showActivity: false, showDate: true, calc: (vals, g, a, dateStr) => { const d = new Date(dateStr); d.setDate(d.getDate() + 280); return d.toDateString(); }, format: (v) => v },
+            macro: { 
+                name: 'Macro Calculator', l1: 'Daily Calories', inputs: 1, showGender: false, showActivity: false, 
+                calc: (vals) => {
+                    const c = vals[0]; return `P:${Math.round(c*0.3/4)}g C:${Math.round(c*0.4/4)}g F:${Math.round(c*0.3/9)}g`;
+                }, 
+                format: (v) => v,
+                getChartData: (vals, g, act, date, res) => {
+                    const c = vals[0];
+                    const p = Math.round(c*0.3/4);
+                    const carb = Math.round(c*0.4/4);
+                    const f = Math.round(c*0.3/9);
+                    const pie = { type: 'Pie', data: [['Macro', 'Grams'], ['Protein', p], ['Carbs', carb], ['Fat', f]], title: 'Macro Split (30/40/30)' };
+                    return [pie];
+                }
+            }
+        };
+
+        // --- CHART LOGIC ---
+        function initCharts() {
+            google.charts.load('current', {'packages':['corechart', 'gauge']});
+            // Resize handling
+            window.addEventListener('resize', () => {
+                if(window.lastFinanceChartData && document.getElementById('view-finance').style.display !== 'none') {
+                    drawFinanceCharts(window.lastFinanceChartData);
+                }
+                if(window.lastHealthChartData && document.getElementById('view-health').style.display !== 'none') {
+                    drawHealthCharts(window.lastHealthChartData);
+                }
+            });
+        }
+
+        function drawFinanceCharts(chartData) {
+            if(!chartData || !google.visualization) return;
+            window.lastFinanceChartData = chartData; 
+
+            const data = google.visualization.arrayToDataTable(chartData.data);
+            const options = {
+                title: chartData.title,
+                backgroundColor: 'transparent',
+                titleTextStyle: { color: '#64748b', fontSize: 14 },
+                legend: { position: 'bottom', textStyle: { color: '#64748b' } },
+                width: '100%',
+                height: '100%',
+                chartArea: { width: '85%', height: '75%' }
+            };
+
+            if(document.documentElement.classList.contains('dark')) {
+                options.titleTextStyle.color = '#cbd5e1';
+                options.legend.textStyle.color = '#cbd5e1';
+                options.hAxis = { textStyle: { color: '#cbd5e1' } };
+                options.vAxis = { textStyle: { color: '#cbd5e1' } };
+            }
+
+            const container1 = document.getElementById('fin-chart-1');
+            const container2 = document.getElementById('fin-chart-2');
+            container1.innerHTML = ''; container2.innerHTML = ''; 
+
+            let chart;
+            if (chartData.type === 'Pie') {
+                chart = new google.visualization.PieChart(container1);
+                container2.style.display = 'none';
+            } else if (chartData.type === 'Line') {
+                chart = new google.visualization.LineChart(container1);
+                container2.style.display = 'none';
+            } else if (chartData.type === 'Bar') {
+                chart = new google.visualization.ColumnChart(container1);
+                container2.style.display = 'none';
+            }
+
+            if(chart) {
+                container1.style.display = 'block';
+                chart.draw(data, options);
+            }
+        }
+
+        function drawHealthCharts(chartDataArray) {
+            if(!chartDataArray || !google.visualization) return;
+            window.lastHealthChartData = chartDataArray;
+
+            const container1 = document.getElementById('health-chart-1');
+            const container2 = document.getElementById('health-chart-2');
+            container1.innerHTML = ''; container2.innerHTML = '';
+            container1.style.display = 'none'; container2.style.display = 'none';
+
+            chartDataArray.forEach((chartData, index) => {
+                if(!chartData) return;
+                const container = index === 0 ? container1 : container2;
+                container.style.display = 'block';
+
+                const data = google.visualization.arrayToDataTable(chartData.data);
+                const options = {
+                    title: chartData.title,
+                    backgroundColor: 'transparent',
+                    titleTextStyle: { color: '#64748b', fontSize: 14 },
+                    legend: { position: 'bottom', textStyle: { color: '#64748b' } },
+                    width: '100%',
+                    height: '100%',
+                    chartArea: { width: '85%', height: '75%' }
+                };
+
+                if(document.documentElement.classList.contains('dark')) {
+                    options.titleTextStyle.color = '#cbd5e1';
+                    options.legend.textStyle.color = '#cbd5e1';
+                    if(options.hAxis) options.hAxis = { textStyle: { color: '#cbd5e1' } };
+                    else options.hAxis = { textStyle: { color: '#cbd5e1' } };
+                    if(options.vAxis) options.vAxis = { textStyle: { color: '#cbd5e1' } };
+                    else options.vAxis = { textStyle: { color: '#cbd5e1' } };
+                }
+
+                let chart;
+                if (chartData.type === 'Gauge') {
+                    options.redFrom = chartData.redFrom;
+                    options.redTo = chartData.redTo;
+                    options.yellowFrom = chartData.yellowFrom;
+                    options.yellowTo = chartData.yellowTo;
+                    options.greenFrom = chartData.greenFrom;
+                    options.greenTo = chartData.greenTo;
+                    options.max = chartData.max;
+                    options.minorTicks = 5;
+                    chart = new google.visualization.Gauge(container);
+                } else if (chartData.type === 'Pie') {
+                    chart = new google.visualization.PieChart(container);
+                } else if (chartData.type === 'Bar') {
+                    chart = new google.visualization.ColumnChart(container);
+                }
+
+                if(chart) chart.draw(data, options);
+            });
+        }
+
+        // --- Init & Auth ---
+        function initPhysics() {
+            const select = document.getElementById('physics-formula');
+            Object.keys(PHYSICS_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = PHYSICS_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updatePhysicsUI);
+            updatePhysicsUI();
+        }
+
+        function updatePhysicsUI() {
+            const key = document.getElementById('physics-formula').value;
+            const data = PHYSICS_DATA[key];
+            document.getElementById('phys-label-1').textContent = data.l1;
+            document.getElementById('phys-label-2').textContent = data.l2;
+            document.getElementById('phys-label-result').textContent = data.res;
+            document.getElementById('phys-result').value = '';
+        }
+
+        function initFinance() {
+            const select = document.getElementById('finance-formula');
+            Object.keys(FINANCE_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = FINANCE_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updateFinanceUI);
+            updateFinanceUI();
+        }
+
+        function updateFinanceUI() {
+            const key = document.getElementById('finance-formula').value;
+            const data = FINANCE_DATA[key];
+            const count = data.inputs;
+
+            if(count >= 1) document.getElementById('fin-label-1').textContent = data.l1;
+            if(count >= 2) document.getElementById('fin-label-2').textContent = data.l2;
+            
+            const g3 = document.getElementById('fin-input-group-3');
+            if (count >= 3) {
+                g3.style.display = 'block';
+                document.getElementById('fin-label-3').textContent = data.l3;
+            } else {
+                g3.style.display = 'none';
+            }
+
+            const g4 = document.getElementById('fin-input-group-4');
+            if (count >= 4) {
+                g4.classList.remove('hidden');
+                document.getElementById('fin-label-4').textContent = data.l4;
+            } else {
+                g4.classList.add('hidden');
+            }
+
+            document.getElementById('fin-label-result').textContent = data.res;
+            document.getElementById('fin-result').value = '';
+            // Clear charts on view change
+            document.getElementById('fin-chart-1').innerHTML = '';
+            document.getElementById('fin-chart-2').innerHTML = '';
+        }
+
+        function initHealth() {
+            const select = document.getElementById('health-formula');
+            Object.keys(HEALTH_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = HEALTH_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updateHealthUI);
+            updateHealthUI();
+        }
+
+        function updateHealthUI() {
+            const key = document.getElementById('health-formula').value;
+            const data = HEALTH_DATA[key];
+            
+            // Show/Hide Logic
+            document.getElementById('health-gender-group').style.display = data.showGender ? 'block' : 'none';
+            document.getElementById('health-activity-group').style.display = data.showActivity ? 'block' : 'none';
+            const dateGroup = document.getElementById('health-date-group');
+            dateGroup.classList.toggle('hidden', !data.showDate);
+            
+            const inputsContainer = document.getElementById('health-inputs-container');
+            inputsContainer.style.display = data.inputs > 0 ? 'block' : 'none';
+
+            if(data.inputs >= 1) document.getElementById('health-label-1').textContent = data.l1;
+            if(data.inputs >= 2) document.getElementById('health-label-2').textContent = data.l2;
+            if(data.inputs >= 3) {
+                document.getElementById('health-input-group-3').classList.remove('hidden');
+                document.getElementById('health-label-3').textContent = data.l3;
+            } else {
+                document.getElementById('health-input-group-3').classList.add('hidden');
+            }
+            if(data.inputs >= 4) {
+                document.getElementById('health-input-group-4').classList.remove('hidden');
+                document.getElementById('health-label-4').textContent = data.l4;
+            } else {
+                document.getElementById('health-input-group-4').classList.add('hidden');
+            }
+
+            document.getElementById('health-result').value = '';
+            // Clear charts
+            document.getElementById('health-chart-1').innerHTML = '';
+            document.getElementById('health-chart-2').innerHTML = '';
+        }
+
+        window.calculatePhysics = function() {
+            const key = document.getElementById('physics-formula').value;
+            const name = PHYSICS_DATA[key].name;
+            const v1 = parseFloat(document.getElementById('phys-input-1').value);
+            const v2 = parseFloat(document.getElementById('phys-input-2').value);
+            
+            if (isNaN(v1) || isNaN(v2)) {
+                document.getElementById('phys-result').value = "Invalid Input";
+                return;
+            }
+            
+            const result = PHYSICS_DATA[key].calc(v1, v2);
+            
+            let formatted = result;
+            if (Math.abs(result) < 0.001 || Math.abs(result) > 10000) {
+                formatted = result.toExponential(3);
+            } else {
+                formatted = parseFloat(result.toFixed(4));
+            }
+            
+            document.getElementById('phys-result').value = formatted;
+            
+            const inputStr = `${v1}, ${v2}`;
+            const unitStr = PHYSICS_DATA[key].res; 
+            saveToHistory(v1, inputStr, formatted, unitStr, 'Physics: ' + name);
+        };
+
+        window.calculateFinance = function() {
+            const key = document.getElementById('finance-formula').value;
+            const data = FINANCE_DATA[key];
+            const v1 = parseFloat(document.getElementById('fin-input-1').value);
+            const v2 = parseFloat(document.getElementById('fin-input-2').value);
+            const v3 = (data.inputs >= 3) ? parseFloat(document.getElementById('fin-input-3').value) : 0;
+            const v4 = (data.inputs >= 4) ? parseFloat(document.getElementById('fin-input-4').value) : 0;
+
+            if (isNaN(v1) || isNaN(v2) || (data.inputs >= 3 && isNaN(v3)) || (data.inputs >= 4 && isNaN(v4))) {
+                document.getElementById('fin-result').value = "Invalid Input";
+                return;
+            }
+
+            const result = data.calc(v1, v2, v3, v4);
+            const formatted = parseFloat(result.toFixed(2)); 
+
+            document.getElementById('fin-result').value = formatted;
+
+            // CHART GENERATION
+            if (data.getChartData) {
+                const chartData = data.getChartData(v1, v2, v3, v4, result);
+                google.charts.setOnLoadCallback(() => drawFinanceCharts(chartData));
+            }
+
+            let inputStr = `${v1}, ${v2}`;
+            if (data.inputs >= 3) inputStr += `, ${v3}`;
+            if (data.inputs >= 4) inputStr += `, ${v4}`;
+            
+            saveToHistory(v1, inputStr, formatted, data.res, 'Finance: ' + data.name);
+        };
+
+        window.calculateHealth = function() {
+            const key = document.getElementById('health-formula').value;
+            const data = HEALTH_DATA[key];
+            
+            // Gather inputs
+            const vals = [];
+            for(let i=1; i<=4; i++) {
+                if(i <= data.inputs) {
+                    const v = parseFloat(document.getElementById(`health-input-${i}`).value);
+                    if(isNaN(v)) {
+                        document.getElementById('health-result').value = "Invalid Input";
+                        return;
+                    }
+                    vals.push(v);
+                }
+            }
+
+            const gender = document.getElementById('health-gender').value;
+            const activity = parseFloat(document.getElementById('health-activity').value);
+            const dateStr = document.getElementById('health-date').value;
+
+            if(data.showDate && !dateStr) {
+                document.getElementById('health-result').value = "Select Date";
+                return;
+            }
+
+            const rawRes = data.calc(vals, gender, activity, dateStr);
+            const formatted = data.format(rawRes);
+            
+            document.getElementById('health-result').value = formatted;
+            
+            // CHART GENERATION
+            if (data.getChartData) {
+                const chartData = data.getChartData(vals, gender, activity, dateStr, rawRes);
+                google.charts.setOnLoadCallback(() => drawHealthCharts(chartData));
+            }
+
+            let inputStr = vals.join(', ');
+            if(data.showDate) inputStr = dateStr;
+            else {
+                if(data.showGender) inputStr += ` (${gender === 'male' ? 'M' : 'F'})`;
+            }
+
+            saveToHistory(vals[0] || 0, inputStr, formatted, '', 'Health: ' + data.name);
+        }
+
+        // --- State Management ---
+        let currentUser = null;
+        let unsubscribeHistory = null;
+        let lastConversion = null;
+        let currentHistoryIds = [];
+
+        // --- Unit Data Definitions ---
+        const UNIT_DATA = {
+            Currency: {
+                // Placeholder initially, filled by API
+                base: 'USD',
+                units: {
+                    'USD': { name: 'US Dollar', factor: 1 },
+                    'EUR': { name: 'Euro', factor: 0.92 }, 
+                    'GBP': { name: 'British Pound', factor: 0.79 },
+                    'JPY': { name: 'Japanese Yen', factor: 150 },
+                    'CAD': { name: 'Canadian Dollar', factor: 1.35 },
+                    'AUD': { name: 'Australian Dollar', factor: 1.52 },
+                    'INR': { name: 'Indian Rupee', factor: 83 },
+                    'CNY': { name: 'Chinese Yuan', factor: 7.2 }
+                }
+            },
+            Length: { base: 'm', units: { 'm': { name: 'Meters', factor: 1 }, 'km': { name: 'Kilometers', factor: 1000 }, 'cm': { name: 'Centimeters', factor: 0.01 }, 'mm': { name: 'Millimeters', factor: 0.001 }, 'mi': { name: 'Miles', factor: 1609.34 }, 'yd': { name: 'Yards', factor: 0.9144 }, 'ft': { name: 'Feet', factor: 0.3048 }, 'in': { name: 'Inches', factor: 0.0254 } } },
+            Weight: { base: 'kg', units: { 'kg': { name: 'Kilograms', factor: 1 }, 'g': { name: 'Grams', factor: 0.001 }, 'mg': { name: 'Milligrams', factor: 0.000001 }, 'lb': { name: 'Pounds', factor: 0.453592 }, 'oz': { name: 'Ounces', factor: 0.0283495 }, 'st': { name: 'Stone', factor: 6.35029 }, 't': { name: 'Metric Ton', factor: 1000 } } },
+            Temperature: { type: 'special', units: { 'C': { name: 'Celsius', toBase: v => v, fromBase: v => v }, 'F': { name: 'Fahrenheit', toBase: v => (v - 32) * 5/9, fromBase: v => (v * 9/5) + 32 }, 'K': { name: 'Kelvin', toBase: v => v - 273.15, fromBase: v => v + 273.15 } } },
+            Volume: { base: 'l', units: { 'l': { name: 'Liters', factor: 1 }, 'ml': { name: 'Milliliters', factor: 0.001 }, 'gal': { name: 'Gallons (US)', factor: 3.78541 }, 'qt': { name: 'Quarts (US)', factor: 0.946353 }, 'pt': { name: 'Pints (US)', factor: 0.473176 }, 'cup': { name: 'Cups', factor: 0.24 } } },
+            Area: { base: 'sqm', units: { 'sqm': { name: 'Square Meters', factor: 1 }, 'sqkm': { name: 'Square Kilometers', factor: 1000000 }, 'sqft': { name: 'Square Feet', factor: 0.092903 }, 'sqin': { name: 'Square Inches', factor: 0.00064516 }, 'ha': { name: 'Hectares', factor: 10000 }, 'ac': { name: 'Acres', factor: 4046.86 } } },
+            Speed: { base: 'mps', units: { 'mps': { name: 'Meters/Sec', factor: 1 }, 'kph': { name: 'Km/Hour', factor: 0.277778 }, 'mph': { name: 'Miles/Hour', factor: 0.44704 }, 'kn': { name: 'Knots', factor: 0.514444 } } },
+            Time: { base: 's', units: { 's': { name: 'Seconds', factor: 1 }, 'min': { name: 'Minutes', factor: 60 }, 'h': { name: 'Hours', factor: 3600 }, 'd': { name: 'Days', factor: 86400 }, 'wk': { name: 'Weeks', factor: 604800 }, 'mo': { name: 'Months (Avg)', factor: 2628000 }, 'y': { name: 'Years', factor: 31536000 } } },
+            Data: { base: 'b', units: { 'b': { name: 'Bytes', factor: 1 }, 'kb': { name: 'Kilobytes', factor: 1024 }, 'mb': { name: 'Megabytes', factor: 1048576 }, 'gb': { name: 'Gigabytes', factor: 1073741824 }, 'tb': { name: 'Terabytes', factor: 1099511627776 } } },
+            Pressure: { base: 'pa', units: { 'pa': { name: 'Pascal', factor: 1 }, 'bar': { name: 'Bar', factor: 100000 }, 'psi': { name: 'PSI', factor: 6894.76 }, 'atm': { name: 'Atmosphere', factor: 101325 } } },
+            Energy: { base: 'j', units: { 'j': { name: 'Joules', factor: 1 }, 'kj': { name: 'Kilojoules', factor: 1000 }, 'cal': { name: 'Calories', factor: 4.184 }, 'kcal': { name: 'Kilocalories', factor: 4184 }, 'wh': { name: 'Watt-hour', factor: 3600 }, 'kwh': { name: 'Kilowatt-hour', factor: 3600000 } } }
+        };
+
+        // --- DOM Elements ---
+        const categorySelect = document.getElementById('category-select');
+        const fromUnitSelect = document.getElementById('from-unit');
+        const toUnitSelect = document.getElementById('to-unit');
+        const inputVal = document.getElementById('input-value');
+        const outputVal = document.getElementById('output-value');
+        const swapBtn = document.getElementById('swap-btn');
+        const themeToggle = document.getElementById('theme-toggle');
+        const authDot = document.getElementById('auth-dot');
+        const authText = document.getElementById('auth-text');
+        
+        // Standard History
+        const historyList = document.getElementById('history-list');
+        const historyEmpty = document.getElementById('history-empty');
+        const historyEmptyText = document.getElementById('history-empty-text');
+        const historyLoading = document.getElementById('history-loading');
+        const clearHistoryBtn = document.getElementById('clear-history');
+        const printHistoryBtn = document.getElementById('print-history');
+
+        // Physics History
+        const physHistoryList = document.getElementById('phys-history-list');
+        const physHistoryEmpty = document.getElementById('phys-history-empty');
+        const physHistoryEmptyText = document.getElementById('phys-history-empty-text');
+        const physHistoryLoading = document.getElementById('phys-history-loading');
+        const physClearHistoryBtn = document.getElementById('phys-clear-history');
+        const physPrintHistoryBtn = document.getElementById('phys-print-history');
+
+        // Finance History
+        const finHistoryList = document.getElementById('fin-history-list');
+        const finHistoryEmpty = document.getElementById('fin-history-empty');
+        const finHistoryEmptyText = document.getElementById('fin-history-empty-text');
+        const finHistoryLoading = document.getElementById('fin-history-loading');
+        const finClearHistoryBtn = document.getElementById('fin-clear-history');
+        const finPrintHistoryBtn = document.getElementById('fin-print-history');
+
+        // Health History
+        const healthHistoryList = document.getElementById('health-history-list');
+        const healthHistoryEmpty = document.getElementById('health-history-empty');
+        const healthHistoryEmptyText = document.getElementById('health-history-empty-text');
+        const healthHistoryLoading = document.getElementById('health-history-loading');
+        const healthClearHistoryBtn = document.getElementById('health-clear-history');
+        const healthPrintHistoryBtn = document.getElementById('health-print-history');
+
+        // --- UI Initialization ---
+        function initUI() {
+            // Populate Categories
+            Object.keys(UNIT_DATA).forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                categorySelect.appendChild(opt);
+            });
+
+            // Dark Mode check
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Event Listeners
+            categorySelect.addEventListener('change', () => updateUnits(true));
+            fromUnitSelect.addEventListener('change', calculate);
+            toUnitSelect.addEventListener('change', calculate);
+            inputVal.addEventListener('input', calculate);
+            swapBtn.addEventListener('click', swapUnits);
+            
+            themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('color-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            });
+
+            clearHistoryBtn.addEventListener('click', handleClearHistoryClick);
+            printHistoryBtn.addEventListener('click', () => { window.focus(); window.print(); });
+
+            physClearHistoryBtn.addEventListener('click', handleClearHistoryClick);
+            physPrintHistoryBtn.addEventListener('click', () => { window.focus(); window.print(); });
+
+            finClearHistoryBtn.addEventListener('click', handleClearHistoryClick);
+            finPrintHistoryBtn.addEventListener('click', () => { window.focus(); window.print(); });
+
+            healthClearHistoryBtn.addEventListener('click', handleClearHistoryClick);
+            healthPrintHistoryBtn.addEventListener('click', () => { window.focus(); window.print(); });
+
+            // Initial Render
+            updateUnits(true);
+            switchView('home');
+            initPhysics();
+            initFinance();
+            initHealth();
+            initCharts(); // Initialize Google Charts
+            
+            // Fetch Currency Rates
+            fetchCurrencyRates();
+        }
+
+        async function fetchCurrencyRates() {
+            try {
+                // Free API - No key needed
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                if(data && data.rates) {
+                    // Update Currency Data
+                    const newUnits = {};
+                    // Map specific codes we want to show
+                    const codes = ['USD','EUR','GBP','JPY','CAD','AUD','INR','CNY','CHF','BRL','RUB','MXN'];
+                    codes.forEach(c => {
+                        if(data.rates[c]) {
+                            newUnits[c] = { name: c, factor: data.rates[c] };
+                        }
+                    });
+                    UNIT_DATA['Currency'].units = newUnits;
+                    // If currently on Currency, refresh
+                    if(categorySelect.value === 'Currency') updateUnits();
+                }
+            } catch(e) {
+                console.error("Failed to fetch rates", e);
+            }
+        }
+
+        function updateUnits(reset = false) {
+            const category = categorySelect.value;
+            const units = UNIT_DATA[category].units;
+            fromUnitSelect.innerHTML = '';
+            toUnitSelect.innerHTML = '';
+            Object.keys(units).forEach(key => {
+                const createOpt = () => { const opt = document.createElement('option'); opt.value = key; opt.textContent = units[key].name; return opt; };
+                fromUnitSelect.appendChild(createOpt());
+                toUnitSelect.appendChild(createOpt());
+            });
+            if (reset) {
+                const keys = Object.keys(units);
+                if (keys.length > 1) toUnitSelect.value = keys[1];
+                inputVal.value = '';
+                outputVal.value = '';
+            }
+            calculate();
+        }
+
+        function swapUnits() {
+            const temp = fromUnitSelect.value;
+            fromUnitSelect.value = toUnitSelect.value;
+            toUnitSelect.value = temp;
+            calculate();
+        }
+
+        // --- Conversion Logic ---
+        async function calculate() {
+            const category = categorySelect.value;
+            const fromUnit = fromUnitSelect.value;
+            const toUnit = toUnitSelect.value;
+            const val = parseFloat(inputVal.value);
+
+            if (isNaN(val)) { outputVal.value = ''; return; }
+
+            let result;
+            const catData = UNIT_DATA[category];
+            if (catData.type === 'special') {
+                const baseVal = catData.units[fromUnit].toBase(val);
+                result = catData.units[toUnit].fromBase(baseVal);
+            } else {
+                const fromFactor = catData.units[fromUnit].factor;
+                const toFactor = catData.units[toUnit].factor;
+                result = val * (fromFactor / toFactor); // Inverse relation for currency if base is USD? No, factor is "per USD".
+                // If 1 USD = 0.9 EUR. Factor is 0.9.
+                // Convert 10 USD to EUR: 10 * (1 / 0.9) -> Wait.
+                // Standard Unit Logic: Factor is "How many base units in this unit" usually.
+                // BUT for API rates: 1 USD = X Target. So X is rate.
+                // If base is USD. 
+                // To convert FROM A TO B:  Amount * (Rate_B / Rate_A)
+                // Example: 100 EUR to GBP.  (100 / 0.92) * 0.79
+                
+                if(category === 'Currency') {
+                     // API gives rate per 1 USD.
+                     // Value / FromRate * ToRate
+                     const fromRate = catData.units[fromUnit].factor;
+                     const toRate = catData.units[toUnit].factor;
+                     result = (val / fromRate) * toRate;
+                } else {
+                    // Standard units (factor = units per base)
+                    // Wait, standard logic above: result = val * (fromFactor / toFactor);
+                    // Length: m is base (1). km is 1000.
+                    // 1 km to m: 1 * (1000 / 1) = 1000. Correct.
+                    result = val * (catData.units[fromUnit].factor / catData.units[toUnit].factor);
+                }
+            }
+
+            let formatted = result;
+            if (Math.abs(result) < 0.000001 && result !== 0) formatted = result.toExponential(4);
+            else if (Math.abs(result) > 1000000) formatted = result.toExponential(4);
+            else formatted = parseFloat(result.toPrecision(6)); 
+
+            outputVal.value = formatted;
+            saveToHistory(val, fromUnit, formatted, toUnit, category);
+        }
+
+        let saveTimeout;
+        function saveToHistory(inVal, inUnit, outVal, outUnit, cat) {
+            if (!currentUser) return;
+
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                // Allow 0 but not empty or NaN (unless it's physics/finance text based)
+                if (inVal === '' || (typeof inVal === 'number' && isNaN(inVal))) return;
+
+                const path = `artifacts/${appId}/users/${currentUser.uid}/conversion_results`;
+                
+                try {
+                    await addDoc(collection(db, path), {
+                        inputVal: inVal, // Can be number or string
+                        inputUnit: inUnit,
+                        outputVal: outVal,
+                        outputUnit: outUnit,
+                        category: cat,
+                        timestamp: serverTimestamp()
+                    });
+                } catch (err) { console.error("Error saving history:", err); }
+            }, 1500);
+        }
+
+        // --- Authentication & Firestore ---
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth Failed", error);
+                authText.textContent = "Offline Mode";
+                authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
+                setHistoryLoading(false, true, "Connection Failed");
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                authText.textContent = `ID: ${user.uid.slice(0, 6)}...`;
+                authDot.className = "w-2 h-2 bg-green-500 rounded-full mr-2";
+                setupHistoryListener(user.uid);
+            } else {
+                currentUser = null;
+                if (authText.textContent !== "Setup Required") {
+                    authText.textContent = "Disconnected";
+                    authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
+                    setHistoryLoading(false, true, "Not connected");
+                }
+            }
+        });
+
+        function setHistoryLoading(loading, empty, emptyMsg) {
+            const toggle = (el, show) => el.classList.toggle('hidden', !show);
+            
+            // Standard
+            toggle(historyLoading, loading);
+            toggle(historyEmpty, empty);
+            if(emptyMsg) historyEmptyText.innerHTML = emptyMsg;
+            
+            // Physics
+            toggle(physHistoryLoading, loading);
+            toggle(physHistoryEmpty, empty);
+            if(emptyMsg) physHistoryEmptyText.innerHTML = emptyMsg;
+
+            // Finance
+            toggle(finHistoryLoading, loading);
+            toggle(finHistoryEmpty, empty);
+            if(emptyMsg) finHistoryEmptyText.innerHTML = emptyMsg;
+
+            // Health
+            toggle(healthHistoryLoading, loading);
+            toggle(healthHistoryEmpty, empty);
+            if(emptyMsg) healthHistoryEmptyText.innerHTML = emptyMsg;
+        }
+
+        function setupHistoryListener(uid) {
+            const path = `artifacts/${appId}/users/${uid}/conversion_results`;
+            const q = collection(db, path);
+
+            unsubscribeHistory = onSnapshot(q, (snapshot) => {
+                const historyData = [];
+                snapshot.forEach(doc => { historyData.push({ id: doc.id, ...doc.data() }); });
+
+                currentHistoryIds = historyData.map(item => item.id);
+                
+                const isEmpty = currentHistoryIds.length === 0;
+                // Update Buttons
+                [clearHistoryBtn, printHistoryBtn, physClearHistoryBtn, physPrintHistoryBtn, finClearHistoryBtn, finPrintHistoryBtn, healthClearHistoryBtn, healthPrintHistoryBtn].forEach(btn => {
+                    if (isEmpty) {
+                        btn.disabled = true;
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                });
+
+                historyData.sort((a, b) => {
+                    const tA = a.timestamp?.seconds || 0;
+                    const tB = b.timestamp?.seconds || 0;
+                    return tB - tA;
+                });
+
+                renderHistory(historyData);
+                setHistoryLoading(false, isEmpty, "No history yet");
+            }, (error) => {
+                console.error("Snapshot error:", error);
+                setHistoryLoading(false, false, ""); // Just hide spinner
+                historyList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error.</div>`;
+                physHistoryList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error.</div>`;
+                finHistoryList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error.</div>`;
+                healthHistoryList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error.</div>`;
+            });
+        }
+
+        function renderHistory(data) {
+            // Render to all lists to keep in sync (filtered by type logic is handled visually or via context)
+            // Since user wants separate views, we could filter, but for simplicity/robustness in single file:
+            // We render all items to all history lists, OR we could filter.
+            // Given the request for "Financial Calculator" history, users usually expect to see ONLY financial items there.
+            // Let's implement basic filtering for the specific history lists.
+            
+            historyList.innerHTML = '';
+            physHistoryList.innerHTML = '';
+            finHistoryList.innerHTML = '';
+            healthHistoryList.innerHTML = '';
+            
+            if (data.length === 0) return;
+
+            data.forEach(item => {
+                const isPhysics = item.category.startsWith('Physics');
+                const isFinance = item.category.startsWith('Finance');
+                const isHealth = item.category.startsWith('Health');
+                
+                // Format Symbols/Units
+                let fromSymbol = item.inputUnit;
+                let toSymbol = item.outputUnit;
+
+                if (!isPhysics && !isFinance && !isHealth) {
+                    // Standard Converter units
+                    fromSymbol = UNIT_DATA[item.category]?.units[item.inputUnit]?.name || item.inputUnit;
+                    toSymbol = UNIT_DATA[item.category]?.units[item.outputUnit]?.name || item.outputUnit;
+                }
+
+                const html = `
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline gap-2">
+                            <span class="font-bold text-slate-700 dark:text-slate-200 truncate">${item.inputVal} <span class="text-xs font-normal text-slate-500">${fromSymbol}</span></span>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-400"></i>
+                            <span class="font-bold text-brand-600 dark:text-brand-400 truncate">${item.outputVal} <span class="text-xs font-normal text-brand-500/70">${toSymbol}</span></span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
+                            <span class="uppercase tracking-wider font-semibold text-slate-300 dark:text-slate-600 border border-slate-200 dark:border-slate-600 px-1 rounded">${item.category}</span>
+                        </div>
+                    </div>
+                    <button class="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500 p-2" onclick="window.deleteItem('${item.id}')">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+
+                const createEl = () => {
+                    const el = document.createElement('div');
+                    el.className = 'flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group border border-transparent hover:border-slate-200 dark:hover:border-slate-600';
+                    el.innerHTML = html;
+                    return el;
+                };
+
+                // Logic: Main converter history shows ALL (or just converter? Users usually prefer ALL in main)
+                // Let's show ALL in Converter view, and specific ones in Calculator views.
+                historyList.appendChild(createEl());
+
+                if (isPhysics) physHistoryList.appendChild(createEl());
+                if (isFinance) finHistoryList.appendChild(createEl());
+                if (isHealth) healthHistoryList.appendChild(createEl());
+            });
+        }
+
+        window.deleteItem = async (docId) => {
+            if (!currentUser) return;
+            try {
+                await deleteDoc(doc(db, `artifacts/${appId}/users/${currentUser.uid}/conversion_results`, docId));
+            } catch (e) { console.error("Delete failed", e); }
+        };
+
+        window.copyResult = function() {
+            const output = document.getElementById('output-value');
+            const icon = document.getElementById('copy-icon');
+            if (output.value && output.value !== '') {
+                const el = document.createElement('textarea');
+                el.value = output.value;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                if(icon) {
+                    icon.classList.remove('fa-regular', 'fa-copy');
+                    icon.classList.add('fa-solid', 'fa-check', 'text-green-500');
+                    setTimeout(() => {
+                        icon.classList.remove('fa-solid', 'fa-check', 'text-green-500');
+                        icon.classList.add('fa-regular', 'fa-copy');
+                    }, 1000);
+                }
+            }
+        };
+
+        let clearConfirmTimer;
+        async function handleClearHistoryClick() {
+            if (!currentUser || currentHistoryIds.length === 0) return;
+            
+            // Update all buttons for consistent UI state
+            const btns = [clearHistoryBtn, physClearHistoryBtn, finClearHistoryBtn, healthClearHistoryBtn];
+            // Check confirmation state on the first button (shared state logic)
+            const isConfirming = clearHistoryBtn.getAttribute('data-confirming') === 'true';
+
+            if (isConfirming) {
+                btns.forEach(b => { b.innerText = "Clearing..."; b.disabled = true; });
+                try {
+                    const promises = currentHistoryIds.map(id => 
+                        deleteDoc(doc(db, `artifacts/${appId}/users/${currentUser.uid}/conversion_results`, id))
+                    );
+                    await Promise.all(promises);
+                    btns.forEach(b => { 
+                        b.innerText = "Clear All"; 
+                        b.removeAttribute('data-confirming'); 
+                        b.disabled = false; 
+                    });
+                } catch (e) {
+                    console.error("Clear all failed", e);
+                    btns.forEach(b => b.innerText = "Error");
+                    setTimeout(() => {
+                        btns.forEach(b => { 
+                            b.innerText = "Clear All"; 
+                            b.removeAttribute('data-confirming'); 
+                            b.disabled = false; 
+                        });
+                    }, 2000);
+                }
+            } else {
+                btns.forEach(b => {
+                    b.innerText = "Confirm?";
+                    b.setAttribute('data-confirming', 'true');
+                    b.classList.add('bg-red-500', 'text-white');
+                });
+                clearTimeout(clearConfirmTimer);
+                clearConfirmTimer = setTimeout(() => {
+                    btns.forEach(b => {
+                        b.innerText = "Clear All";
+                        b.removeAttribute('data-confirming');
+                        b.classList.remove('bg-red-500', 'text-white');
+                    });
+                }, 3000);
+            }
+        }
+
+        initUI();
+        initAuth();
+
+    </script>
+</body>
+</html>
         tailwind.config = {
             darkMode: 'class',
             theme: {
