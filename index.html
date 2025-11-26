@@ -268,11 +268,34 @@
 
         // --- Configuration ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'unitcv-pro-dev';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "demo-key", authDomain: "demo.firebaseapp.com", projectId: "demo-project"
-        }; // Placeholder fallback
+        
+        // ------------------------------------------------------------------
+        // IMPORTANT: FOR GITHUB PAGES DEPLOYMENT
+        // 1. Go to your Firebase Console -> Project Settings -> General
+        // 2. Scroll down to "Your apps" and select the web app.
+        // 3. Copy the "firebaseConfig" object.
+        // 4. REPLACE the object below with your actual config.
+        // ------------------------------------------------------------------
+        let firebaseConfig;
+        
+        if (typeof __firebase_config !== 'undefined') {
+            // Internal AI Environment
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // EXTERNAL / GITHUB PAGES ENVIRONMENT
+            // PASTE YOUR KEYS HERE:
+            firebaseConfig = {
+                apiKey: "PASTE_YOUR_API_KEY_HERE",
+                authDomain: "YOUR_PROJECT.firebaseapp.com",
+                projectId: "YOUR_PROJECT_ID",
+                storageBucket: "YOUR_PROJECT.appspot.com",
+                messagingSenderId: "YOUR_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            };
+        }
 
         // --- Firebase Init ---
+        // Safety check to prevent crashing if keys aren't pasted yet
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -568,6 +591,9 @@
                 console.error("Auth Failed", error);
                 authText.textContent = "Offline Mode";
                 authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
+                // Hide spinner on failure so it doesn't hang
+                historyLoading.classList.add('hidden');
+                historyEmpty.classList.remove('hidden');
             }
         }
 
@@ -584,6 +610,11 @@
                 authText.textContent = "Disconnected";
                 authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
                 historyList.innerHTML = '';
+                
+                // IMPORTANT: Stop loading if we are disconnected (e.g. invalid config)
+                historyLoading.classList.add('hidden');
+                historyEmpty.classList.remove('hidden');
+                historyEmpty.querySelector('p').textContent = "Not connected";
             }
         });
 
@@ -630,7 +661,7 @@
                 console.error("Snapshot error:", error);
                 historyLoading.classList.add('hidden');
                 // Likely permission error if rules aren't set
-                historyList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error. Check Permissions.</div>`;
+                historyList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error. Check Permissions or Config.</div>`;
             });
         }
 
