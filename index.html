@@ -164,7 +164,7 @@
                         <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 group-focus-within:ring-2 group-focus-within:ring-brand-500 transition-all">
                             <input type="number" id="input-value" placeholder="0" class="flex-1 bg-transparent border-none p-4 text-2xl font-bold focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-300">
                             <div class="bg-slate-50 dark:bg-slate-700 border-l border-slate-200 dark:border-slate-600 flex items-center px-2">
-                                <select id="from-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-300 w-28 cursor-pointer text-right">
+                                <select id="from-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-300 w-40 cursor-pointer text-right">
                                     <!-- Units populated by JS -->
                                 </select>
                             </div>
@@ -181,10 +181,16 @@
                     <!-- To Input (Read Only for Result) -->
                     <div class="relative group">
                         <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">To</label>
-                        <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 bg-slate-50 dark:bg-slate-900/50">
+                        <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 bg-slate-50 dark:bg-slate-900/50 relative">
                             <input type="text" id="output-value" readonly placeholder="0" class="flex-1 bg-transparent border-none p-4 text-2xl font-bold focus:ring-0 text-brand-600 dark:text-brand-400 cursor-default">
-                            <div class="border-l border-slate-200 dark:border-slate-600 flex items-center px-2">
-                                <select id="to-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-300 w-28 cursor-pointer text-right">
+                            
+                            <!-- COPY BUTTON ADJUSTED POSITION -->
+                            <button onclick="window.copyResult()" class="absolute right-48 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-500 transition-colors p-2" title="Copy to Clipboard">
+                                <i id="copy-icon" class="fa-regular fa-copy"></i>
+                            </button>
+
+                            <div class="border-l border-slate-200 dark:border-slate-600 flex items-center px-2 z-10 bg-slate-50 dark:bg-slate-900/50">
+                                <select id="to-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-300 w-40 cursor-pointer text-right">
                                     <!-- Units populated by JS -->
                                 </select>
                             </div>
@@ -597,7 +603,17 @@
                 // Hide spinner on failure so it doesn't hang
                 historyLoading.classList.add('hidden');
                 historyEmpty.classList.remove('hidden');
-                historyEmptyText.textContent = "Connection Failed";
+                
+                // Improved Error Display
+                let errorMsg = "Connection Failed";
+                if (error.code === 'auth/operation-not-allowed') {
+                    errorMsg = "Enable Anonymous Auth<br><span class='text-[10px]'>Go to Firebase Console > Build > Authentication > Sign-in method</span>";
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    errorMsg = "Domain Not Authorized<br><span class='text-[10px]'>Add this domain in Firebase Console > Authentication > Settings</span>";
+                } else {
+                    errorMsg = `Connection Failed<br><span class='text-[10px]'>${error.code || error.message}</span>`;
+                }
+                historyEmptyText.innerHTML = errorMsg;
             }
         }
 
@@ -716,6 +732,36 @@
                 await deleteDoc(doc(db, `artifacts/${appId}/users/${currentUser.uid}/conversion_results`, docId));
             } catch (e) {
                 console.error("Delete failed", e);
+            }
+        };
+
+        window.copyResult = function() {
+            const output = document.getElementById('output-value');
+            const icon = document.getElementById('copy-icon');
+            
+            if (output.value && output.value !== '') {
+                // Modern Clipboard API, fallbacks handled by browsers usually, 
+                // but explicit execCommand is better for iframes if API fails, though API is standard now.
+                // We'll stick to navigator for simplicity as it's cleaner in modern browsers.
+                
+                // For iframe compatibility in some contexts, simple textarea hack is robust:
+                const el = document.createElement('textarea');
+                el.value = output.value;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+
+                // Animation
+                if(icon) {
+                    icon.classList.remove('fa-regular', 'fa-copy');
+                    icon.classList.add('fa-solid', 'fa-check', 'text-green-500');
+                    
+                    setTimeout(() => {
+                        icon.classList.remove('fa-solid', 'fa-check', 'text-green-500');
+                        icon.classList.add('fa-regular', 'fa-copy');
+                    }, 1000);
+                }
             }
         };
 
