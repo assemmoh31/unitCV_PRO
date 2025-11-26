@@ -226,7 +226,7 @@
                     <!-- Empty State -->
                     <div id="history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10">
                         <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
-                        <p class="text-sm">No conversions yet</p>
+                        <p id="history-empty-text" class="text-sm text-center">No conversions yet</p>
                     </div>
 
                     <!-- List Items (Injected by JS) -->
@@ -428,6 +428,7 @@
         const authText = document.getElementById('auth-text');
         const historyList = document.getElementById('history-list');
         const historyEmpty = document.getElementById('history-empty');
+        const historyEmptyText = document.getElementById('history-empty-text');
         const historyLoading = document.getElementById('history-loading');
         const clearHistoryBtn = document.getElementById('clear-history');
         const printHistoryBtn = document.getElementById('print-history');
@@ -581,6 +582,20 @@
 
         // --- Authentication & Firestore ---
         async function initAuth() {
+            // 1. SMART CHECK: Detect if still using placeholders in production/local environment
+            if (firebaseConfig.apiKey === "PASTE_YOUR_API_KEY_HERE") {
+                console.warn("Firebase keys are missing.");
+                authText.textContent = "Setup Required";
+                authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
+                
+                // Show instructive error instead of generic "Not Connected"
+                historyLoading.classList.add('hidden');
+                historyEmpty.classList.remove('hidden');
+                historyEmptyText.innerHTML = `<span class="text-red-500 font-bold block mb-1">Setup Required</span>
+                                              <span class="text-xs">Open this file in an editor and<br>paste your Firebase Keys.</span>`;
+                return; // Stop here
+            }
+
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -591,9 +606,11 @@
                 console.error("Auth Failed", error);
                 authText.textContent = "Offline Mode";
                 authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
+                
                 // Hide spinner on failure so it doesn't hang
                 historyLoading.classList.add('hidden');
                 historyEmpty.classList.remove('hidden');
+                historyEmptyText.textContent = "Connection Failed";
             }
         }
 
@@ -607,14 +624,17 @@
                 setupHistoryListener(user.uid);
             } else {
                 currentUser = null;
-                authText.textContent = "Disconnected";
-                authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
                 historyList.innerHTML = '';
                 
-                // IMPORTANT: Stop loading if we are disconnected (e.g. invalid config)
-                historyLoading.classList.add('hidden');
-                historyEmpty.classList.remove('hidden');
-                historyEmpty.querySelector('p').textContent = "Not connected";
+                // Only change text if we didn't already set a specific error (like Setup Required)
+                if (authText.textContent !== "Setup Required") {
+                    authText.textContent = "Disconnected";
+                    authDot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
+                    
+                    historyLoading.classList.add('hidden');
+                    historyEmpty.classList.remove('hidden');
+                    historyEmptyText.textContent = "Not connected";
+                }
             }
         });
 
@@ -641,6 +661,7 @@
                     clearHistoryBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     printHistoryBtn.disabled = true;
                     printHistoryBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    historyEmptyText.textContent = "No conversions yet"; // Reset text to default
                 } else {
                     clearHistoryBtn.disabled = false;
                     clearHistoryBtn.classList.remove('opacity-50', 'cursor-not-allowed');
