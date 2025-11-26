@@ -86,12 +86,13 @@
             /* 2. Make the history sections visible (whichever is active in DOM) */
             #history-section, #history-section *, 
             #phys-history-section, #phys-history-section *,
-            #fin-history-section, #fin-history-section * {
+            #fin-history-section, #fin-history-section *,
+            #health-history-section, #health-history-section * {
                 visibility: visible;
             }
 
             /* 3. Position the history section at the very top of the printed page */
-            #history-section, #phys-history-section, #fin-history-section {
+            #history-section, #phys-history-section, #fin-history-section, #health-history-section {
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -107,13 +108,13 @@
             }
 
             /* 4. Ensure the container expands fully */
-            #history-container, #phys-history-container, #fin-history-container {
+            #history-container, #phys-history-container, #fin-history-container, #health-history-container {
                 height: auto !important;
                 overflow: visible !important;
             }
 
             /* 5. Hide the action buttons inside the visible section */
-            #history-actions, #phys-history-actions, #fin-history-actions,
+            #history-actions, #phys-history-actions, #fin-history-actions, #health-history-actions,
             .fa-trash-can, button[id$="clear-history"] {
                 display: none !important;
             }
@@ -126,7 +127,7 @@
             }
             
             /* Add a print-only title */
-            #history-section::before, #phys-history-section::before, #fin-history-section::before {
+            #history-section::before, #phys-history-section::before, #fin-history-section::before, #health-history-section::before {
                 content: "Calculation History Report";
                 display: block;
                 font-size: 24px;
@@ -200,7 +201,7 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400">Calculate Speed, Force, Work, Energy, and Power.</p>
             </div>
 
-            <!-- Financial Calculator Card (Active) -->
+            <!-- Financial Calculator Card -->
             <div onclick="switchView('finance')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-green-500 dark:hover:border-green-500 transition-all cursor-pointer group relative overflow-hidden">
                 <div class="bg-green-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400 mb-4 group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-sack-dollar text-xl"></i>
@@ -209,9 +210,8 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400">Loans, Mortgage, Interest, Salary & Savings.</p>
             </div>
 
-            <!-- Health Calculator Card (Placeholder) -->
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer group relative overflow-hidden">
-                <div class="absolute top-3 right-3 bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded-full">SOON</div>
+            <!-- Health Calculator Card (Active) -->
+            <div onclick="switchView('health')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer group relative overflow-hidden">
                 <div class="bg-red-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 mb-4 group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-heart-pulse text-xl"></i>
                 </div>
@@ -496,6 +496,130 @@
             </div>
         </div>
 
+        <!-- VIEW 5: HEALTH CALCULATOR -->
+        <div id="view-health" class="view-section gap-6 md:grid-cols-12">
+            <!-- Health Calculator Section -->
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-heart-pulse text-red-500"></i> Health
+                        </h2>
+                        <select id="health-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-red-500 block p-2.5 font-medium cursor-pointer w-48">
+                            <!-- Formulas populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+                        <!-- Special Inputs -->
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div id="health-gender-group">
+                                <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</label>
+                                <select id="health-gender" class="w-full bg-slate-50 dark:bg-slate-700 border-none p-3 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500">
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                            <div id="health-activity-group" style="display:none;">
+                                <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</label>
+                                <select id="health-activity" class="w-full bg-slate-50 dark:bg-slate-700 border-none p-3 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500">
+                                    <option value="1.2">Sedentary</option>
+                                    <option value="1.375">Light Activity</option>
+                                    <option value="1.55">Moderate Activity</option>
+                                    <option value="1.725">Very Active</option>
+                                    <option value="1.9">Extra Active</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Date Input (For Pregnancy) -->
+                        <div id="health-date-group" class="space-y-2 hidden">
+                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Period Date</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                <input type="date" id="health-date" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 min-w-0">
+                            </div>
+                        </div>
+
+                        <!-- Standard Numeric Inputs -->
+                        <div id="health-inputs-container" class="space-y-4">
+                            <div id="health-input-group-1" class="space-y-2">
+                                <label id="health-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="number" id="health-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                </div>
+                            </div>
+                            <div id="health-input-group-2" class="space-y-2">
+                                <label id="health-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="number" id="health-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                </div>
+                            </div>
+                            <div id="health-input-group-3" class="space-y-2 hidden">
+                                <label id="health-label-3" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 3</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="number" id="health-input-3" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                </div>
+                            </div>
+                            <div id="health-input-group-4" class="space-y-2 hidden">
+                                <label id="health-label-4" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 4</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="number" id="health-input-4" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button onclick="calculateHealth()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">
+                            Calculate Result
+                        </button>
+
+                        <!-- Result -->
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="health-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-red-200 dark:ring-red-900/50 bg-red-50 dark:bg-red-900/20">
+                                <input type="text" id="health-result" readonly class="flex-1 bg-transparent border-none p-4 text-xl font-bold focus:ring-0 text-red-600 dark:text-red-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health History Section -->
+            <div id="health-history-section" class="md:col-span-12 lg:col-span-5 h-full relative">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History
+                        </h3>
+                        <div id="health-history-actions" class="flex items-center gap-2">
+                            <button id="health-print-history" type="button" class="text-xs text-slate-500 hover:text-red-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-red-400 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-print"></i>
+                            </button>
+                            <button id="health-clear-history" type="button" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md transition-all disabled:opacity-50">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="health-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <!-- Loading State -->
+                        <div id="health-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10">
+                            <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="health-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10">
+                            <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
+                            <p id="health-history-empty-text" class="text-sm text-center">No calculations yet</p>
+                        </div>
+
+                        <!-- List Items -->
+                        <div id="health-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <footer class="mt-auto py-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -562,8 +686,7 @@
             const target = document.getElementById(targetId);
             
             if (target) {
-                // Grid for all views
-                target.style.display = 'grid'; 
+                target.style.display = (viewName === 'home') ? 'grid' : 'grid'; 
                 setTimeout(() => target.classList.add('active'), 10);
             }
 
@@ -589,99 +712,31 @@
 
         // --- FINANCE CALCULATOR LOGIC ---
         const FINANCE_DATA = {
-            loan: { 
-                name: 'Loan Payment', 
-                l1: 'Principal ($)', 
-                l2: 'Rate (%/yr)', 
-                l3: 'Term (Years)', 
-                res: 'Monthly Pmt ($)',
-                inputs: 3,
-                calc: (p, r, t) => {
-                    if(r === 0) return p / (t * 12);
-                    const i = (r / 100) / 12;
-                    const n = t * 12;
-                    return p * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
-                }
+            loan: { name: 'Loan Payment', l1: 'Principal ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', res: 'Monthly Pmt ($)', inputs: 3, calc: (p, r, t) => { if(r === 0) return p / (t * 12); const i = (r / 100) / 12; const n = t * 12; return p * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); } },
+            mortgage: { name: 'Mortgage', l1: 'Home Price ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', l4: 'Down Payment ($)', res: 'Monthly Pmt ($)', inputs: 4, calc: (p, r, t, down) => { const loan = p - down; if(loan <= 0) return 0; if(r === 0) return loan / (t * 12); const i = (r / 100) / 12; const n = t * 12; return loan * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); } },
+            compound: { name: 'Compound Interest', l1: 'Initial ($)', l2: 'Rate (%/yr)', l3: 'Time (Years)', l4: 'Monthly Dep ($)', res: 'Future Value ($)', inputs: 4, calc: (p, r, t, pmt) => { const n = 12; const rate = r / 100; const totalPeriods = t * 12; const futurePrincipal = p * Math.pow(1 + rate/n, totalPeriods); const futureDeposits = pmt * (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); return futurePrincipal + futureDeposits; } },
+            salary: { name: 'Simple Net Salary', l1: 'Gross Annual ($)', l2: 'Tax Rate (%)', l3: 'Deductions ($)', res: 'Net Monthly ($)', inputs: 3, calc: (gross, tax, ded) => { const taxAmt = gross * (tax / 100); const netAnnual = gross - taxAmt - ded; return netAnnual / 12; } },
+            savings_goal: { name: 'Savings Goal', l1: 'Goal Amount ($)', l2: 'Current Saved ($)', l3: 'Rate (%/yr)', l4: 'Years to Grow', res: 'Monthly Need ($)', inputs: 4, calc: (goal, current, r, t) => { const n = 12; const rate = r / 100; const totalPeriods = t * 12; const fvPrincipal = current * Math.pow(1 + rate/n, totalPeriods); const remainingGoal = goal - fvPrincipal; if(remainingGoal <= 0) return 0; const denominator = (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); return remainingGoal / denominator; } },
+            roi: { name: 'Investment Return', l1: 'Invested ($)', l2: 'Returned ($)', res: 'ROI (%)', inputs: 2, calc: (inv, ret) => ((ret - inv) / inv) * 100 }
+        };
+
+        // --- HEALTH CALCULATOR LOGIC ---
+        const HEALTH_DATA = {
+            bmi: { name: 'BMI Calculator', l1: 'Weight (kg)', l2: 'Height (cm)', inputs: 2, showGender: false, showActivity: false, calc: (vals) => { const h = vals[1]/100; return vals[0] / (h*h); }, format: (v) => `${v.toFixed(1)} BMI` },
+            bmr: { name: 'BMR (Mifflin-St Jeor)', l1: 'Weight (kg)', l2: 'Height (cm)', l3: 'Age', inputs: 3, showGender: true, showActivity: false, calc: (vals, g) => { const s = g === 'male' ? 5 : -161; return (10*vals[0]) + (6.25*vals[1]) - (5*vals[2]) + s; }, format: (v) => `${Math.round(v)} kcal/day` },
+            tdee: { name: 'Calorie Intake (TDEE)', l1: 'Weight (kg)', l2: 'Height (cm)', l3: 'Age', inputs: 3, showGender: true, showActivity: true, calc: (vals, g, act) => { const s = g === 'male' ? 5 : -161; const bmr = (10*vals[0]) + (6.25*vals[1]) - (5*vals[2]) + s; return bmr * act; }, format: (v) => `${Math.round(v)} kcal/day` },
+            body_fat: { name: 'Body Fat % (Navy)', l1: 'Height (cm)', l2: 'Neck (cm)', l3: 'Waist (cm)', l4: 'Hip (cm, F only)', inputs: 4, showGender: true, showActivity: false, 
+                calc: (vals, g) => {
+                    // vals: 0=H, 1=Neck, 2=Waist, 3=Hip
+                    if(g === 'male') return 495 / (1.0324 - 0.19077 * Math.log10(vals[2] - vals[1]) + 0.15456 * Math.log10(vals[0])) - 450;
+                    else return 495 / (1.29579 - 0.35004 * Math.log10(vals[2] + vals[3] - vals[1]) + 0.22100 * Math.log10(vals[0])) - 450;
+                }, format: (v) => `${v.toFixed(1)}% Fat` 
             },
-            mortgage: {
-                name: 'Mortgage',
-                l1: 'Home Price ($)',
-                l2: 'Rate (%/yr)',
-                l3: 'Term (Years)',
-                l4: 'Down Payment ($)',
-                res: 'Monthly Pmt ($)',
-                inputs: 4,
-                calc: (p, r, t, down) => {
-                    const loan = p - down;
-                    if(loan <= 0) return 0;
-                    if(r === 0) return loan / (t * 12);
-                    const i = (r / 100) / 12;
-                    const n = t * 12;
-                    return loan * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
-                }
-            },
-            compound: {
-                name: 'Compound Interest',
-                l1: 'Initial ($)',
-                l2: 'Rate (%/yr)',
-                l3: 'Time (Years)',
-                l4: 'Monthly Dep ($)',
-                res: 'Future Value ($)',
-                inputs: 4,
-                calc: (p, r, t, pmt) => {
-                    // FV = P(1+r/n)^(nt) + PMT * ...
-                    const n = 12; // Monthly compounding
-                    const rate = r / 100;
-                    const totalPeriods = t * 12;
-                    const futurePrincipal = p * Math.pow(1 + rate/n, totalPeriods);
-                    const futureDeposits = pmt * (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n);
-                    return futurePrincipal + futureDeposits;
-                }
-            },
-            salary: {
-                name: 'Simple Net Salary',
-                l1: 'Gross Annual ($)',
-                l2: 'Tax Rate (%)',
-                l3: 'Deductions ($)',
-                res: 'Net Monthly ($)',
-                inputs: 3,
-                calc: (gross, tax, ded) => {
-                    const taxAmt = gross * (tax / 100);
-                    const netAnnual = gross - taxAmt - ded;
-                    return netAnnual / 12;
-                }
-            },
-            savings_goal: {
-                name: 'Savings Goal',
-                l1: 'Goal Amount ($)',
-                l2: 'Current Saved ($)',
-                l3: 'Rate (%/yr)',
-                l4: 'Years to Grow',
-                res: 'Monthly Need ($)',
-                inputs: 4,
-                calc: (goal, current, r, t) => {
-                    // Solve PMT in Future Value formula
-                    const n = 12;
-                    const rate = r / 100;
-                    const totalPeriods = t * 12;
-                    // FV of current principal
-                    const fvPrincipal = current * Math.pow(1 + rate/n, totalPeriods);
-                    const remainingGoal = goal - fvPrincipal;
-                    if(remainingGoal <= 0) return 0;
-                    
-                    // PMT = FV / [((1+r/n)^nt - 1) / (r/n)]
-                    const denominator = (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n);
-                    return remainingGoal / denominator;
-                }
-            },
-            roi: {
-                name: 'Investment Return',
-                l1: 'Invested ($)',
-                l2: 'Returned ($)',
-                res: 'ROI (%)',
-                inputs: 2,
-                calc: (inv, ret) => ((ret - inv) / inv) * 100
-            }
+            ideal: { name: 'Ideal Weight (Devine)', l1: 'Height (cm)', inputs: 1, showGender: true, showActivity: false, calc: (vals, g) => { const hInch = vals[0] / 2.54; if(hInch < 60) return 0; const base = g === 'male' ? 50 : 45.5; return base + 2.3 * (hInch - 60); }, format: (v) => `${v.toFixed(1)} kg` },
+            preg: { name: 'Pregnancy Due Date', inputs: 0, showGender: false, showActivity: false, showDate: true, calc: (vals, g, a, dateStr) => { const d = new Date(dateStr); d.setDate(d.getDate() + 280); return d.toDateString(); }, format: (v) => v },
+            macro: { name: 'Macro Calculator', l1: 'Daily Calories', inputs: 1, showGender: false, showActivity: false, calc: (vals) => {
+                const c = vals[0]; return `P:${Math.round(c*0.3/4)}g C:${Math.round(c*0.4/4)}g F:${Math.round(c*0.3/9)}g`;
+            }, format: (v) => v }
         };
 
         function initPhysics() {
@@ -722,11 +777,9 @@
             const data = FINANCE_DATA[key];
             const count = data.inputs;
 
-            // Update Labels
             if(count >= 1) document.getElementById('fin-label-1').textContent = data.l1;
             if(count >= 2) document.getElementById('fin-label-2').textContent = data.l2;
             
-            // Toggle Input 3
             const g3 = document.getElementById('fin-input-group-3');
             if (count >= 3) {
                 g3.style.display = 'block';
@@ -735,7 +788,6 @@
                 g3.style.display = 'none';
             }
 
-            // Toggle Input 4
             const g4 = document.getElementById('fin-input-group-4');
             if (count >= 4) {
                 g4.classList.remove('hidden');
@@ -746,6 +798,49 @@
 
             document.getElementById('fin-label-result').textContent = data.res;
             document.getElementById('fin-result').value = '';
+        }
+
+        function initHealth() {
+            const select = document.getElementById('health-formula');
+            Object.keys(HEALTH_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = HEALTH_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updateHealthUI);
+            updateHealthUI();
+        }
+
+        function updateHealthUI() {
+            const key = document.getElementById('health-formula').value;
+            const data = HEALTH_DATA[key];
+            
+            // Show/Hide Logic
+            document.getElementById('health-gender-group').style.display = data.showGender ? 'block' : 'none';
+            document.getElementById('health-activity-group').style.display = data.showActivity ? 'block' : 'none';
+            const dateGroup = document.getElementById('health-date-group');
+            dateGroup.classList.toggle('hidden', !data.showDate);
+            
+            const inputsContainer = document.getElementById('health-inputs-container');
+            inputsContainer.style.display = data.inputs > 0 ? 'block' : 'none';
+
+            if(data.inputs >= 1) document.getElementById('health-label-1').textContent = data.l1;
+            if(data.inputs >= 2) document.getElementById('health-label-2').textContent = data.l2;
+            if(data.inputs >= 3) {
+                document.getElementById('health-input-group-3').classList.remove('hidden');
+                document.getElementById('health-label-3').textContent = data.l3;
+            } else {
+                document.getElementById('health-input-group-3').classList.add('hidden');
+            }
+            if(data.inputs >= 4) {
+                document.getElementById('health-input-group-4').classList.remove('hidden');
+                document.getElementById('health-label-4').textContent = data.l4;
+            } else {
+                document.getElementById('health-input-group-4').classList.add('hidden');
+            }
+
+            document.getElementById('health-result').value = '';
         }
 
         window.calculatePhysics = function() {
@@ -799,6 +894,46 @@
             
             saveToHistory(v1, inputStr, formatted, data.res, 'Finance: ' + data.name);
         };
+
+        window.calculateHealth = function() {
+            const key = document.getElementById('health-formula').value;
+            const data = HEALTH_DATA[key];
+            
+            // Gather inputs
+            const vals = [];
+            for(let i=1; i<=4; i++) {
+                if(i <= data.inputs) {
+                    const v = parseFloat(document.getElementById(`health-input-${i}`).value);
+                    if(isNaN(v)) {
+                        document.getElementById('health-result').value = "Invalid Input";
+                        return;
+                    }
+                    vals.push(v);
+                }
+            }
+
+            const gender = document.getElementById('health-gender').value;
+            const activity = parseFloat(document.getElementById('health-activity').value);
+            const dateStr = document.getElementById('health-date').value;
+
+            if(data.showDate && !dateStr) {
+                document.getElementById('health-result').value = "Select Date";
+                return;
+            }
+
+            const rawRes = data.calc(vals, gender, activity, dateStr);
+            const formatted = data.format(rawRes);
+            
+            document.getElementById('health-result').value = formatted;
+            
+            let inputStr = vals.join(', ');
+            if(data.showDate) inputStr = dateStr;
+            else {
+                if(data.showGender) inputStr += ` (${gender === 'male' ? 'M' : 'F'})`;
+            }
+
+            saveToHistory(vals[0] || 0, inputStr, formatted, '', 'Health: ' + data.name);
+        }
 
         // --- State Management ---
         let currentUser = null;
@@ -869,6 +1004,14 @@
         const finClearHistoryBtn = document.getElementById('fin-clear-history');
         const finPrintHistoryBtn = document.getElementById('fin-print-history');
 
+        // Health History
+        const healthHistoryList = document.getElementById('health-history-list');
+        const healthHistoryEmpty = document.getElementById('health-history-empty');
+        const healthHistoryEmptyText = document.getElementById('health-history-empty-text');
+        const healthHistoryLoading = document.getElementById('health-history-loading');
+        const healthClearHistoryBtn = document.getElementById('health-clear-history');
+        const healthPrintHistoryBtn = document.getElementById('health-print-history');
+
         // --- UI Initialization ---
         function initUI() {
             // Populate Categories
@@ -907,11 +1050,15 @@
             finClearHistoryBtn.addEventListener('click', handleClearHistoryClick);
             finPrintHistoryBtn.addEventListener('click', () => { window.focus(); window.print(); });
 
+            healthClearHistoryBtn.addEventListener('click', handleClearHistoryClick);
+            healthPrintHistoryBtn.addEventListener('click', () => { window.focus(); window.print(); });
+
             // Initial Render
             updateUnits(true);
             switchView('home');
             initPhysics();
             initFinance();
+            initHealth();
             
             // Fetch Currency Rates
             fetchCurrencyRates();
@@ -1090,6 +1237,11 @@
             toggle(finHistoryLoading, loading);
             toggle(finHistoryEmpty, empty);
             if(emptyMsg) finHistoryEmptyText.innerHTML = emptyMsg;
+
+            // Health
+            toggle(healthHistoryLoading, loading);
+            toggle(healthHistoryEmpty, empty);
+            if(emptyMsg) healthHistoryEmptyText.innerHTML = emptyMsg;
         }
 
         function setupHistoryListener(uid) {
@@ -1104,7 +1256,7 @@
                 
                 const isEmpty = currentHistoryIds.length === 0;
                 // Update Buttons
-                [clearHistoryBtn, printHistoryBtn, physClearHistoryBtn, physPrintHistoryBtn, finClearHistoryBtn, finPrintHistoryBtn].forEach(btn => {
+                [clearHistoryBtn, printHistoryBtn, physClearHistoryBtn, physPrintHistoryBtn, finClearHistoryBtn, finPrintHistoryBtn, healthClearHistoryBtn, healthPrintHistoryBtn].forEach(btn => {
                     if (isEmpty) {
                         btn.disabled = true;
                         btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -1128,6 +1280,7 @@
                 historyList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error.</div>`;
                 physHistoryList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error.</div>`;
                 finHistoryList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error.</div>`;
+                healthHistoryList.innerHTML = `<div class="text-red-500 text-xs p-4">Sync Error.</div>`;
             });
         }
 
@@ -1141,18 +1294,20 @@
             historyList.innerHTML = '';
             physHistoryList.innerHTML = '';
             finHistoryList.innerHTML = '';
+            healthHistoryList.innerHTML = '';
             
             if (data.length === 0) return;
 
             data.forEach(item => {
                 const isPhysics = item.category.startsWith('Physics');
                 const isFinance = item.category.startsWith('Finance');
+                const isHealth = item.category.startsWith('Health');
                 
                 // Format Symbols/Units
                 let fromSymbol = item.inputUnit;
                 let toSymbol = item.outputUnit;
 
-                if (!isPhysics && !isFinance) {
+                if (!isPhysics && !isFinance && !isHealth) {
                     // Standard Converter units
                     fromSymbol = UNIT_DATA[item.category]?.units[item.inputUnit]?.name || item.inputUnit;
                     toSymbol = UNIT_DATA[item.category]?.units[item.outputUnit]?.name || item.outputUnit;
@@ -1187,6 +1342,7 @@
 
                 if (isPhysics) physHistoryList.appendChild(createEl());
                 if (isFinance) finHistoryList.appendChild(createEl());
+                if (isHealth) healthHistoryList.appendChild(createEl());
             });
         }
 
@@ -1223,7 +1379,7 @@
             if (!currentUser || currentHistoryIds.length === 0) return;
             
             // Update all buttons for consistent UI state
-            const btns = [clearHistoryBtn, physClearHistoryBtn, finClearHistoryBtn];
+            const btns = [clearHistoryBtn, physClearHistoryBtn, finClearHistoryBtn, healthClearHistoryBtn];
             // Check confirmation state on the first button (shared state logic)
             const isConfirming = clearHistoryBtn.getAttribute('data-confirming') === 'true';
 
