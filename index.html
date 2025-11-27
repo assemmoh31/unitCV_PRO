@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnitCV Pro - Universal Converter</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Charts -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        
+        /* Input fixes */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; margin: 0; 
+        }
+
+        /* Dark Mode Select Fix */
+        option { background-color: #ffffff; color: #1e293b; }
+        .dark option { background-color: #1e293b; color: #f1f5f9; }
+
+        /* View Utilities */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .view-section.active { display: grid; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Print Styles */
+        @media print {
+            body * { visibility: hidden; }
+            #history-section, #history-section *, 
+            #phys-history-section, #phys-history-section *,
+            #fin-history-section, #fin-history-section *,
+            #health-history-section, #health-history-section *,
+            #math-history-section, #math-history-section * {
+                visibility: visible;
+            }
+            #history-section, #phys-history-section, #fin-history-section, #health-history-section, #math-history-section {
+                position: absolute; left: 0; top: 0; width: 100% !important; margin: 0 !important; padding: 0 !important;
+                border: none !important; box-shadow: none !important; height: auto !important; max-height: none !important;
+                background: white !important; color: black !important;
+            }
+            #history-container, #phys-history-container, #fin-history-container, #health-history-container, #math-history-container {
+                height: auto !important; overflow: visible !important;
+            }
+            #history-actions, #phys-history-actions, #fin-history-actions, #health-history-actions, #math-history-actions,
+            .fa-trash-can, button[id$="clear-history"] {
+                display: none !important;
+            }
+            body { background: white; height: auto; overflow: visible; }
+            
+            /* Print Title */
+            .history-print-title::before {
+                content: "Calculation History Report";
+                display: block; font-size: 24px; font-weight: bold; margin-bottom: 20px;
+                text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('home')">
+                <div class="bg-brand-600 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-layer-group"></i> 
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">UnitCV <span class="text-brand-500">Pro</span></h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button id="home-btn" onclick="switchView('home')" class="hidden text-sm font-medium text-slate-500 hover:text-brand-600 transition-colors items-center gap-2">
+                    <i class="fa-solid fa-house"></i> <span class="hidden sm:inline">Home</span>
+                </button>
+
+                <div id="auth-status" class="hidden md:flex items-center text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">
+                    <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse" id="auth-dot"></span>
+                    <span id="auth-text">Connecting...</span>
+                </div>
+                <button id="theme-toggle" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-4xl mx-auto px-4 py-6 w-full relative">
+        
+        <!-- VIEW 1: HOME DASHBOARD -->
+        <div id="view-home" class="view-section active grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <!-- Converter -->
+            <div onclick="switchView('converter')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-brand-500 dark:hover:border-brand-500 transition-all cursor-pointer group">
+                <div class="bg-brand-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-brand-600 dark:text-brand-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-arrow-right-arrow-left text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Unit Converter</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Currency, Length, Weight, Volume, Temperature.</p>
+            </div>
+
+            <!-- Physics -->
+            <div onclick="switchView('physics')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-purple-500 dark:hover:border-purple-500 transition-all cursor-pointer group">
+                <div class="bg-purple-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-atom text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Physics</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Speed, Force, Work, Energy, and Power.</p>
+            </div>
+
+            <!-- Finance -->
+            <div onclick="switchView('finance')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-green-500 dark:hover:border-green-500 transition-all cursor-pointer group">
+                <div class="bg-green-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-sack-dollar text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Finance</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Loans, Mortgage, Interest, Salary & Savings.</p>
+            </div>
+
+            <!-- Health -->
+            <div onclick="switchView('health')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer group">
+                <div class="bg-red-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-heart-pulse text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Health</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">BMI, BMR, Body Fat and Calories.</p>
+            </div>
+
+            <!-- Math & Geometry (New) -->
+            <div onclick="switchView('math')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-blue-500 dark:hover:border-blue-500 transition-all cursor-pointer group">
+                <div class="bg-blue-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-shapes text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Math & Geometry</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Shapes, Areas, Volumes, Algebra & Trig.</p>
+            </div>
+        </div>
+
+        <!-- VIEW 2: UNIT CONVERTER -->
+        <div id="view-converter" class="view-section gap-6 md:grid-cols-12">
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg">Converter</h2>
+                        <select id="category-select" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-brand-500 block p-2.5 font-medium cursor-pointer"></select>
+                    </div>
+                    <div class="p-6 space-y-8">
+                        <div class="relative group">
+                            <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">From</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 group-focus-within:ring-2 group-focus-within:ring-brand-500 transition-all">
+                                <input type="number" id="input-value" placeholder="0" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0">
+                                <div class="bg-slate-50 dark:bg-slate-700 border-l border-slate-200 dark:border-slate-600 flex items-center px-2">
+                                    <select id="from-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-200 w-28 sm:w-40 md:w-56 cursor-pointer text-right pr-7"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center -my-4 relative z-10">
+                            <button id="swap-btn" class="bg-brand-600 hover:bg-brand-700 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-transform hover:rotate-180 active:scale-95">
+                                <i class="fa-solid fa-arrow-right-arrow-left text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="relative group">
+                            <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">To</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600 bg-slate-50 dark:bg-slate-900/50">
+                                <input type="text" id="output-value" readonly placeholder="0" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-0 text-brand-600 dark:text-brand-400 cursor-default min-w-0">
+                                <button onclick="window.copyResult()" class="flex items-center justify-center px-3 text-slate-400 hover:text-brand-500 transition-colors" title="Copy to Clipboard">
+                                    <i id="copy-icon" class="fa-regular fa-copy"></i>
+                                </button>
+                                <div class="border-l border-slate-200 dark:border-slate-600 flex items-center px-2 bg-slate-50 dark:bg-slate-900/50">
+                                    <select id="to-unit" class="bg-transparent border-none text-sm font-medium focus:ring-0 text-slate-600 dark:text-slate-200 w-28 sm:w-40 md:w-56 cursor-pointer text-right pr-7"></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- History (Reusable Component Structure) -->
+            <div id="history-section" class="md:col-span-12 lg:col-span-5 h-full relative history-print-title">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History</h3>
+                        <div id="history-actions" class="flex items-center gap-2">
+                            <button id="print-history" class="text-xs text-slate-500 hover:text-brand-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-400 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md transition-all"><i class="fa-solid fa-print"></i></button>
+                            <button id="clear-history" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md transition-all disabled:opacity-50">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <div id="history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10"><i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i></div>
+                        <div id="history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10"><i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i><p id="history-empty-text" class="text-sm text-center">No conversions yet</p></div>
+                        <div id="history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: PHYSICS -->
+        <div id="view-physics" class="view-section gap-6 md:grid-cols-12">
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-atom text-purple-500"></i> Physics</h2>
+                        <select id="physics-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-purple-500 block p-2.5 font-medium cursor-pointer w-48"></select>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div class="space-y-2">
+                            <label id="phys-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="phys-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <label id="phys-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="phys-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div>
+                        </div>
+                        <button onclick="calculatePhysics()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">Calculate Result</button>
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="phys-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-purple-200 dark:ring-purple-900/50 bg-purple-50 dark:bg-purple-900/20">
+                                <input type="text" id="phys-result" readonly class="flex-1 bg-transparent border-none p-4 text-2xl font-bold focus:ring-0 text-purple-600 dark:text-purple-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Physics History -->
+            <div id="phys-history-section" class="md:col-span-12 lg:col-span-5 h-full relative history-print-title">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History</h3>
+                        <div id="phys-history-actions" class="flex items-center gap-2">
+                            <button id="phys-print-history" class="text-xs text-slate-500 hover:text-purple-600 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md"><i class="fa-solid fa-print"></i></button>
+                            <button id="phys-clear-history" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md disabled:opacity-50">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="phys-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <div id="phys-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10"><i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i></div>
+                        <div id="phys-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10"><i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i><p id="phys-history-empty-text" class="text-sm text-center">No calculations yet</p></div>
+                        <div id="phys-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 4: FINANCE -->
+        <div id="view-finance" class="view-section gap-6 md:grid-cols-12">
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-sack-dollar text-green-500"></i> Finance</h2>
+                        <select id="finance-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-green-500 block p-2.5 font-medium cursor-pointer w-48"></select>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div class="space-y-2">
+                            <label id="fin-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="fin-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-green-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <label id="fin-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="fin-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-green-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div>
+                        </div>
+                        <div id="fin-input-group-3" class="space-y-2">
+                            <label id="fin-label-3" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 3</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="fin-input-3" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-green-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div>
+                        </div>
+                        <div id="fin-input-group-4" class="space-y-2 hidden">
+                            <label id="fin-label-4" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 4</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="fin-input-4" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-green-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div>
+                        </div>
+                        <button onclick="calculateFinance()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">Calculate Result</button>
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="fin-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-green-200 dark:ring-green-900/50 bg-green-50 dark:bg-green-900/20">
+                                <input type="text" id="fin-result" readonly class="flex-1 bg-transparent border-none p-4 text-2xl font-bold focus:ring-0 text-green-600 dark:text-green-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                        <div id="finance-chart-container" class="w-full mt-6 space-y-6">
+                            <div id="fin-chart-1" class="w-full h-64"></div>
+                            <div id="fin-chart-2" class="w-full h-64"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Finance History -->
+            <div id="fin-history-section" class="md:col-span-12 lg:col-span-5 h-full relative history-print-title">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History</h3>
+                        <div id="fin-history-actions" class="flex items-center gap-2">
+                            <button id="fin-print-history" class="text-xs text-slate-500 hover:text-green-600 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md"><i class="fa-solid fa-print"></i></button>
+                            <button id="fin-clear-history" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md disabled:opacity-50">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="fin-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <div id="fin-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10"><i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i></div>
+                        <div id="fin-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10"><i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i><p id="fin-history-empty-text" class="text-sm text-center">No calculations yet</p></div>
+                        <div id="fin-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 5: HEALTH -->
+        <div id="view-health" class="view-section gap-6 md:grid-cols-12">
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-heart-pulse text-red-500"></i> Health</h2>
+                        <select id="health-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-red-500 block p-2.5 font-medium cursor-pointer w-48"></select>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div id="health-gender-group">
+                                <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</label>
+                                <select id="health-gender" class="w-full bg-slate-50 dark:bg-slate-700 border-none p-3 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500">
+                                    <option value="male">Male</option><option value="female">Female</option>
+                                </select>
+                            </div>
+                            <div id="health-activity-group" style="display:none;">
+                                <label class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</label>
+                                <select id="health-activity" class="w-full bg-slate-50 dark:bg-slate-700 border-none p-3 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-red-500">
+                                    <option value="1.2">Sedentary</option><option value="1.375">Light</option><option value="1.55">Moderate</option><option value="1.725">Very Active</option><option value="1.9">Extra Active</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="health-date-group" class="space-y-2 hidden">
+                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Period Date</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="date" id="health-date" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 min-w-0"></div>
+                        </div>
+                        <div id="health-inputs-container" class="space-y-4">
+                            <!-- Dynamic inputs created by JS would be cleaner, but hardcoding 4 slots works -->
+                            <div id="health-input-group-1" class="space-y-2"><label id="health-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="health-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="health-input-group-2" class="space-y-2"><label id="health-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="health-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="health-input-group-3" class="space-y-2 hidden"><label id="health-label-3" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 3</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="health-input-3" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="health-input-group-4" class="space-y-2 hidden"><label id="health-label-4" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 4</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="health-input-4" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-red-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                        </div>
+                        <button onclick="calculateHealth()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">Calculate Result</button>
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="health-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-red-200 dark:ring-red-900/50 bg-red-50 dark:bg-red-900/20">
+                                <input type="text" id="health-result" readonly class="flex-1 bg-transparent border-none p-4 text-xl font-bold focus:ring-0 text-red-600 dark:text-red-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                        <div id="health-chart-container" class="w-full mt-6 space-y-6">
+                            <div id="health-chart-1" class="w-full h-64"></div>
+                            <div id="health-chart-2" class="w-full h-64"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Health History -->
+            <div id="health-history-section" class="md:col-span-12 lg:col-span-5 h-full relative history-print-title">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History</h3>
+                        <div id="health-history-actions" class="flex items-center gap-2">
+                            <button id="health-print-history" class="text-xs text-slate-500 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md"><i class="fa-solid fa-print"></i></button>
+                            <button id="health-clear-history" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md disabled:opacity-50">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="health-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <div id="health-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10"><i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i></div>
+                        <div id="health-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10"><i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i><p id="health-history-empty-text" class="text-sm text-center">No calculations yet</p></div>
+                        <div id="health-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 6: MATH & GEOMETRY (NEW) -->
+        <div id="view-math" class="view-section gap-6 md:grid-cols-12">
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-shapes text-blue-500"></i> Math</h2>
+                        <select id="math-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-blue-500 block p-2.5 font-medium cursor-pointer w-48"></select>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div id="math-inputs-container" class="space-y-4">
+                            <div id="math-input-group-1" class="space-y-2"><label id="math-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="math-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="math-input-group-2" class="space-y-2"><label id="math-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="math-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="math-input-group-3" class="space-y-2 hidden"><label id="math-label-3" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 3</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="math-input-3" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                        </div>
+                        <button onclick="calculateMath()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">Calculate Result</button>
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="math-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-blue-200 dark:ring-blue-900/50 bg-blue-50 dark:bg-blue-900/20">
+                                <input type="text" id="math-result" readonly class="flex-1 bg-transparent border-none p-4 text-xl font-bold focus:ring-0 text-blue-600 dark:text-blue-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                        <div id="math-chart-container" class="w-full mt-6 space-y-6">
+                            <div id="math-chart-1" class="w-full h-64"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Math History -->
+            <div id="math-history-section" class="md:col-span-12 lg:col-span-5 h-full relative history-print-title">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History</h3>
+                        <div id="math-history-actions" class="flex items-center gap-2">
+                            <button id="math-print-history" class="text-xs text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md"><i class="fa-solid fa-print"></i></button>
+                            <button id="math-clear-history" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md disabled:opacity-50">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="math-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <div id="math-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10"><i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i></div>
+                        <div id="math-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10"><i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i><p id="math-history-empty-text" class="text-sm text-center">No calculations yet</p></div>
+                        <div id="math-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div class="max-w-4xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-xs text-slate-400">© 2025 UnitCV Pro. Securely powered by Firebase.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Configuration ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'unitcv-pro-dev';
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            firebaseConfig = {
+                apiKey: "AIzaSyCFrWdI9uhF9PYwfBLSLfhjttRV0nDI6GM",
+                authDomain: "unitcv-pro.firebaseapp.com",
+                projectId: "unitcv-pro",
+                storageBucket: "unitcv-pro.firebasestorage.app",
+                messagingSenderId: "130030967254",
+                appId: "1:130030967254:web:1c38ded19fdf50f589ac77",
+                measurementId: "G-23S89JVSM3"
+            };
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- VIEW MANAGEMENT ---
+        window.switchView = function(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+                el.style.display = 'none';
+            });
+
+            const targetId = 'view-' + viewName;
+            const target = document.getElementById(targetId);
+            
+            if (target) {
+                target.style.display = (viewName === 'home') ? 'grid' : 'grid'; 
+                setTimeout(() => {
+                    target.classList.add('active');
+                    if(viewName === 'finance' && window.lastFinanceChartData) drawFinanceCharts(window.lastFinanceChartData);
+                    if(viewName === 'health' && window.lastHealthChartData) drawHealthCharts(window.lastHealthChartData);
+                    if(viewName === 'math' && window.lastMathChartData) drawMathCharts(window.lastMathChartData);
+                }, 10);
+            }
+
+            const homeBtn = document.getElementById('home-btn');
+            if (viewName === 'home') {
+                homeBtn.classList.add('hidden');
+                homeBtn.classList.remove('flex');
+            } else {
+                homeBtn.classList.remove('hidden');
+                homeBtn.classList.add('flex');
+            }
+        };
+
+        // --- MATH CALCULATOR LOGIC (NEW) ---
+        const MATH_DATA = {
+            circle: {
+                name: 'Circle Properties', l1: 'Radius (r)', inputs: 1,
+                calc: (v) => {
+                    const area = Math.PI * v[0] * v[0];
+                    const circ = 2 * Math.PI * v[0];
+                    return `A: ${area.toFixed(2)}, C: ${circ.toFixed(2)}`;
+                },
+                format: (v) => v
+            },
+            triangle: {
+                name: 'Triangle Area (Heron)', l1: 'Side A', l2: 'Side B', l3: 'Side C', inputs: 3,
+                calc: (v) => {
+                    const [a, b, c] = v;
+                    const s = (a + b + c) / 2;
+                    if(s <= a || s <= b || s <= c) return "Impossible Triangle";
+                    const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+                    return area;
+                },
+                format: (v) => typeof v === 'string' ? v : `${v.toFixed(2)} units²`
+            },
+            rect: {
+                name: 'Rectangle', l1: 'Length', l2: 'Width', inputs: 2,
+                calc: (v) => { return `Area: ${v[0]*v[1]}, Peri: ${2*(v[0]+v[1])}`; },
+                format: (v) => v
+            },
+            cylinder: {
+                name: 'Cylinder Volume', l1: 'Radius', l2: 'Height', inputs: 2,
+                calc: (v) => Math.PI * v[0] * v[0] * v[1],
+                format: (v) => `${v.toFixed(2)} units³`
+            },
+            sphere: {
+                name: 'Sphere Properties', l1: 'Radius', inputs: 1,
+                calc: (v) => {
+                    const vol = (4/3) * Math.PI * Math.pow(v[0], 3);
+                    const area = 4 * Math.PI * v[0] * v[0];
+                    return `Vol: ${vol.toFixed(2)}, Surf: ${area.toFixed(2)}`;
+                },
+                format: (v) => v
+            },
+            quadratic: {
+                name: 'Quadratic Solver (ax²+bx+c)', l1: 'a', l2: 'b', l3: 'c', inputs: 3,
+                calc: (v) => {
+                    const [a, b, c] = v;
+                    if (a === 0) return "Not Quadratic";
+                    const delta = b*b - 4*a*c;
+                    if (delta < 0) return "No Real Roots";
+                    if (delta === 0) return `x = ${-b/(2*a)}`;
+                    const x1 = (-b + Math.sqrt(delta)) / (2*a);
+                    const x2 = (-b - Math.sqrt(delta)) / (2*a);
+                    return `x1: ${x1.toFixed(2)}, x2: ${x2.toFixed(2)}`;
+                },
+                format: (v) => v,
+                getChartData: (v) => {
+                    const [a, b, c] = v;
+                    const rows = [['x', 'y']];
+                    // Vertex x = -b/2a
+                    const vx = -b / (2*a);
+                    const range = 10;
+                    for(let x = vx - range; x <= vx + range; x+=1) {
+                        const y = a*x*x + b*x + c;
+                        rows.push([x, y]);
+                    }
+                    return { type: 'Line', data: rows, title: `Plot: y = ${a}x² + ${b}x + ${c}` };
+                }
+            },
+            pythagoras: {
+                name: 'Pythagorean Theorem', l1: 'Side A', l2: 'Side B', inputs: 2,
+                calc: (v) => Math.sqrt(v[0]*v[0] + v[1]*v[1]),
+                format: (v) => `Hypotenuse: ${v.toFixed(2)}`
+            }
+        };
+
+        // --- PHYSICS & FINANCE & HEALTH DATA (Unchanged) ---
+        const PHYSICS_DATA = {
+            speed: { name: 'Speed', l1: 'Dist (m)', l2: 'Time (s)', res: 'Speed (m/s)', calc: (a,b) => a/b },
+            accel: { name: 'Acceleration', l1: 'Δ Vel (m/s)', l2: 'Time (s)', res: 'Accel (m/s²)', calc: (a,b) => a/b },
+            force: { name: 'Force', l1: 'Mass (kg)', l2: 'Accel (m/s²)', res: 'Force (N)', calc: (a,b) => a*b },
+            work: { name: 'Work', l1: 'Force (N)', l2: 'Dist (m)', res: 'Work (J)', calc: (a,b) => a*b },
+            power: { name: 'Power', l1: 'Work (J)', l2: 'Time (s)', res: 'Power (W)', calc: (a,b) => a/b },
+            ke: { name: 'Kinetic Energy', l1: 'Mass (kg)', l2: 'Vel (m/s)', res: 'Energy (J)', calc: (a,b) => 0.5 * a * (b*b) }
+        };
+
+        const FINANCE_DATA = {
+            loan: { name: 'Loan Payment', l1: 'Principal ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', res: 'Monthly Pmt ($)', inputs: 3, calc: (p, r, t) => { if(r === 0) return p / (t * 12); const i = (r / 100) / 12; const n = t * 12; return p * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); }, getChartData: (p, r, t, res) => { const totalPaid = res * t * 12; let totalInterest = totalPaid - p; if (totalInterest < 0) totalInterest = 0; return { type: 'Pie', data: [['Type', 'Amount'], ['Principal', p], ['Interest', totalInterest]], title: 'Total Cost Breakdown' }; } },
+            mortgage: { name: 'Mortgage', l1: 'Home Price ($)', l2: 'Rate (%/yr)', l3: 'Term (Years)', l4: 'Down Payment ($)', res: 'Monthly Pmt ($)', inputs: 4, calc: (p, r, t, down) => { const loan = p - down; if(loan <= 0) return 0; if(r === 0) return loan / (t * 12); const i = (r / 100) / 12; const n = t * 12; return loan * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1); }, getChartData: (p, r, t, down, res) => { const loan = p - down; const totalPaid = res * t * 12; let totalInterest = totalPaid - loan; if (totalInterest < 0) totalInterest = 0; return { type: 'Pie', data: [['Type', 'Amount'], ['Down Payment', down], ['Loan Principal', loan], ['Total Interest', totalInterest]], title: 'Mortgage Cost Breakdown' }; } },
+            compound: { name: 'Compound Interest', l1: 'Initial ($)', l2: 'Rate (%/yr)', l3: 'Time (Years)', l4: 'Monthly Dep ($)', res: 'Future Value ($)', inputs: 4, calc: (p, r, t, pmt) => { const n = 12; const rate = r / 100; const totalPeriods = t * 12; const fp = p * Math.pow(1 + rate/n, totalPeriods); const fd = pmt * (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); return fp + fd; }, getChartData: (p, r, t, pmt, res) => { const rows = [['Year', 'Balance']]; const n = 12; const rate = r/100; for(let y=0; y<=t; y++) { const periods = y*12; const bal = (p * Math.pow(1+rate/n, periods)) + (pmt * (Math.pow(1+rate/n, periods)-1)/(rate/n)); rows.push([y.toString(), bal]); } return { type: 'Line', data: rows, title: 'Growth Over Time' }; } },
+            salary: { name: 'Simple Net Salary', l1: 'Gross Annual ($)', l2: 'Tax Rate (%)', l3: 'Deductions ($)', res: 'Net Monthly ($)', inputs: 3, calc: (gross, tax, ded) => { const taxAmt = gross * (tax / 100); const netAnnual = gross - taxAmt - ded; return netAnnual / 12; }, getChartData: (gross, tax, ded, res) => { const taxAmt = gross * (tax/100); let netAnnual = res * 12; if (netAnnual < 0) netAnnual = 0; return { type: 'Pie', data: [['Type', 'Amount'], ['Net Pay', netAnnual], ['Tax', taxAmt], ['Deductions', ded]], title: 'Annual Salary Breakdown' }; } },
+            savings_goal: { name: 'Savings Goal', l1: 'Goal Amount ($)', l2: 'Current Saved ($)', l3: 'Rate (%/yr)', l4: 'Years to Grow', res: 'Monthly Need ($)', inputs: 4, calc: (goal, current, r, t) => { const n = 12; const rate = r / 100; const totalPeriods = t * 12; const fvPrincipal = current * Math.pow(1 + rate/n, totalPeriods); const remaining = goal - fvPrincipal; if(remaining <= 0) return 0; const denom = (Math.pow(1 + rate/n, totalPeriods) - 1) / (rate/n); return remaining / denom; }, getChartData: (goal, current, r, t, res) => { const rows = [['Year', 'Balance', 'Goal']]; const n = 12; const rate = r/100; for(let y=0; y<=t; y++) { const periods = y*12; const bal = (current * Math.pow(1+rate/n, periods)) + (res * (Math.pow(1+rate/n, periods)-1)/(rate/n)); rows.push([y.toString(), bal, goal]); } return { type: 'Line', data: rows, title: 'Progress to Goal' }; } },
+            roi: { name: 'Investment Return', l1: 'Invested ($)', l2: 'Returned ($)', res: 'ROI (%)', inputs: 2, calc: (inv, ret) => ((ret - inv) / inv) * 100, getChartData: (inv, ret, res) => { const profit = ret - inv; const isLoss = profit < 0; return { type: 'Bar', data: [['Type', 'Amount', { role: 'style' }], ['Invested', inv, '#3b82f6'], [isLoss ? 'Loss' : 'Profit', Math.abs(profit), isLoss ? '#ef4444' : '#22c55e']], title: 'ROI Analysis' }; } }
+        };
+
+        const HEALTH_DATA = {
+            bmi: { name: 'BMI Calculator', l1: 'Weight (kg)', l2: 'Height (cm)', inputs: 2, showGender: false, showActivity: false, calc: (vals) => { const h = vals[1]/100; return vals[0] / (h*h); }, format: (v) => `${v.toFixed(1)} BMI`, getChartData: (vals, g, act, date, res) => { const gauge = { type: 'Gauge', data: [['Label', 'Value'], ['BMI', parseFloat(res.toFixed(1))]], title: 'BMI Score', max: 40, redFrom: 30, redTo: 40, yellowFrom: 25, yellowTo: 30, greenFrom: 18.5, greenTo: 25 }; const bar = { type: 'Bar', data: [['Category', 'BMI'], ['Underweight', 18.5], ['Normal', 24.9], ['Overweight', 29.9], ['You', parseFloat(res.toFixed(1))]], title: 'BMI Comparison' }; return [gauge, bar]; } },
+            bmr: { name: 'BMR (Mifflin-St Jeor)', l1: 'Weight (kg)', l2: 'Height (cm)', l3: 'Age', inputs: 3, showGender: true, showActivity: false, calc: (vals, g) => { const s = g === 'male' ? 5 : -161; return (10*vals[0]) + (6.25*vals[1]) - (5*vals[2]) + s; }, format: (v) => `${Math.round(v)} kcal/day`, getChartData: (vals, g, act, date, res) => { return null; } },
+            tdee: { name: 'Calorie Intake (TDEE)', l1: 'Weight (kg)', l2: 'Height (cm)', l3: 'Age', inputs: 3, showGender: true, showActivity: true, calc: (vals, g, act) => { const s = g === 'male' ? 5 : -161; const bmr = (10*vals[0]) + (6.25*vals[1]) - (5*vals[2]) + s; return bmr * act; }, format: (v) => `${Math.round(v)} kcal/day`, getChartData: (vals, g, act, date, res) => { const s = g === 'male' ? 5 : -161; const bmr = (10*vals[0]) + (6.25*vals[1]) - (5*vals[2]) + s; const burn = res - bmr; const pie = { type: 'Pie', data: [['Source', 'Calories'], ['BMR (Exist)', bmr], ['Activity (Burn)', burn]], title: 'Energy Expenditure' }; const bar = { type: 'Bar', data: [['Goal', 'Calories'], ['Cut', res-500], ['Maintain', res], ['Bulk', res+500]], title: 'Goal Targets' }; return [pie, bar]; } },
+            body_fat: { name: 'Body Fat % (Navy)', l1: 'Height (cm)', l2: 'Neck (cm)', l3: 'Waist (cm)', l4: 'Hip (cm, F only)', inputs: 4, showGender: true, showActivity: false, calc: (vals, g) => { if(g === 'male') return 495 / (1.0324 - 0.19077 * Math.log10(vals[2] - vals[1]) + 0.15456 * Math.log10(vals[0])) - 450; else return 495 / (1.29579 - 0.35004 * Math.log10(vals[2] + vals[3] - vals[1]) + 0.22100 * Math.log10(vals[0])) - 450; }, format: (v) => `${v.toFixed(1)}% Fat`, getChartData: (vals, g, act, date, res) => { const gauge = { type: 'Gauge', data: [['Label', 'Value'], ['Body Fat', parseFloat(res.toFixed(1))]], title: 'Body Fat %', max: 50, redFrom: 25, redTo: 50, yellowFrom: 18, yellowTo: 25, greenFrom: 6, greenTo: 18 }; return [gauge]; } }
+        };
+
+        const UNIT_DATA = {
+            Currency: { base: 'USD', units: { 'USD': { name: 'US Dollar', factor: 1 }, 'EUR': { name: 'Euro', factor: 0.92 }, 'GBP': { name: 'British Pound', factor: 0.79 }, 'JPY': { name: 'Japanese Yen', factor: 150 }, 'CAD': { name: 'Canadian Dollar', factor: 1.35 }, 'AUD': { name: 'Australian Dollar', factor: 1.52 }, 'INR': { name: 'Indian Rupee', factor: 83 }, 'CNY': { name: 'Chinese Yuan', factor: 7.2 } } },
+            Length: { base: 'm', units: { 'm': { name: 'Meters', factor: 1 }, 'km': { name: 'Kilometers', factor: 1000 }, 'cm': { name: 'Centimeters', factor: 0.01 }, 'mm': { name: 'Millimeters', factor: 0.001 }, 'mi': { name: 'Miles', factor: 1609.34 }, 'yd': { name: 'Yards', factor: 0.9144 }, 'ft': { name: 'Feet', factor: 0.3048 }, 'in': { name: 'Inches', factor: 0.0254 } } },
+            Weight: { base: 'kg', units: { 'kg': { name: 'Kilograms', factor: 1 }, 'g': { name: 'Grams', factor: 0.001 }, 'mg': { name: 'Milligrams', factor: 0.000001 }, 'lb': { name: 'Pounds', factor: 0.453592 }, 'oz': { name: 'Ounces', factor: 0.0283495 }, 'st': { name: 'Stone', factor: 6.35029 }, 't': { name: 'Metric Ton', factor: 1000 } } },
+            Temperature: { type: 'special', units: { 'C': { name: 'Celsius', toBase: v => v, fromBase: v => v }, 'F': { name: 'Fahrenheit', toBase: v => (v - 32) * 5/9, fromBase: v => (v * 9/5) + 32 }, 'K': { name: 'Kelvin', toBase: v => v - 273.15, fromBase: v => v + 273.15 } } },
+            Volume: { base: 'l', units: { 'l': { name: 'Liters', factor: 1 }, 'ml': { name: 'Milliliters', factor: 0.001 }, 'gal': { name: 'Gallons (US)', factor: 3.78541 }, 'qt': { name: 'Quarts (US)', factor: 0.946353 }, 'pt': { name: 'Pints (US)', factor: 0.473176 }, 'cup': { name: 'Cups', factor: 0.24 } } }
+        };
+
+        // --- CHART & UI FUNCTIONS ---
+        function initCharts() {
+            google.charts.load('current', {'packages':['corechart', 'gauge']});
+            window.addEventListener('resize', () => {
+                if(window.lastFinanceChartData && document.getElementById('view-finance').style.display !== 'none') drawFinanceCharts(window.lastFinanceChartData);
+                if(window.lastHealthChartData && document.getElementById('view-health').style.display !== 'none') drawHealthCharts(window.lastHealthChartData);
+                if(window.lastMathChartData && document.getElementById('view-math').style.display !== 'none') drawMathCharts(window.lastMathChartData);
+            });
+        }
+
+        // Generic Chart Drawer
+        function drawGenericChart(containerId, chartData, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            const data = google.visualization.arrayToDataTable(chartData.data);
+            const options = {
+                title: chartData.title,
+                backgroundColor: 'transparent',
+                titleTextStyle: { color: '#64748b', fontSize: 14 },
+                legend: { position: 'bottom', textStyle: { color: '#64748b' } },
+                width: '100%', height: '100%',
+                chartArea: { width: '85%', height: '75%' }
+            };
+            if(document.documentElement.classList.contains('dark')) {
+                options.titleTextStyle.color = '#cbd5e1';
+                options.legend.textStyle.color = '#cbd5e1';
+                if(options.hAxis) options.hAxis = { textStyle: { color: '#cbd5e1' } }; else options.hAxis = { textStyle: { color: '#cbd5e1' } };
+                if(options.vAxis) options.vAxis = { textStyle: { color: '#cbd5e1' } }; else options.vAxis = { textStyle: { color: '#cbd5e1' } };
+            }
+            let chart;
+            if (chartData.type === 'Pie') chart = new google.visualization.PieChart(container);
+            else if (chartData.type === 'Line') chart = new google.visualization.LineChart(container);
+            else if (chartData.type === 'Bar') chart = new google.visualization.ColumnChart(container);
+            else if (chartData.type === 'Gauge') {
+                Object.assign(options, { redFrom: chartData.redFrom, redTo: chartData.redTo, yellowFrom: chartData.yellowFrom, yellowTo: chartData.yellowTo, greenFrom: chartData.greenFrom, greenTo: chartData.greenTo, max: chartData.max, minorTicks: 5 });
+                chart = new google.visualization.Gauge(container);
+            }
+            if(chart) chart.draw(data, options);
+        }
+
+        function drawFinanceCharts(chartData) {
+            if(!chartData || !google.visualization) return;
+            window.lastFinanceChartData = chartData;
+            drawGenericChart('fin-chart-1', chartData);
+            document.getElementById('fin-chart-1').style.display = 'block';
+            document.getElementById('fin-chart-2').style.display = 'none';
+        }
+
+        function drawHealthCharts(chartDataArray) {
+            if(!chartDataArray || !google.visualization) return;
+            window.lastHealthChartData = chartDataArray;
+            document.getElementById('health-chart-1').innerHTML = '';
+            document.getElementById('health-chart-2').innerHTML = '';
+            chartDataArray.forEach((d, i) => {
+                if(!d) return;
+                const cid = i===0 ? 'health-chart-1' : 'health-chart-2';
+                drawGenericChart(cid, d);
+                document.getElementById(cid).style.display = 'block';
+            });
+        }
+
+        function drawMathCharts(chartData) {
+            if(!chartData || !google.visualization) return;
+            window.lastMathChartData = chartData;
+            drawGenericChart('math-chart-1', chartData);
+            document.getElementById('math-chart-1').style.display = 'block';
+        }
+
+        // --- MATH INITIALIZATION ---
+        function initMath() {
+            const select = document.getElementById('math-formula');
+            Object.keys(MATH_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key; opt.textContent = MATH_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updateMathUI);
+            updateMathUI();
+        }
+
+        function updateMathUI() {
+            const key = document.getElementById('math-formula').value;
+            const data = MATH_DATA[key];
+            const count = data.inputs;
+
+            document.getElementById('math-label-1').textContent = data.l1 || 'Input 1';
+            document.getElementById('math-label-2').textContent = data.l2 || 'Input 2';
+            
+            // Show/Hide Inputs
+            document.getElementById('math-input-group-2').style.display = count >= 2 ? 'block' : 'none';
+            document.getElementById('math-input-group-3').style.display = count >= 3 ? 'block' : 'none';
+            if(count >= 3) document.getElementById('math-label-3').textContent = data.l3;
+
+            document.getElementById('math-label-result').textContent = 'Result';
+            document.getElementById('math-result').value = '';
+            document.getElementById('math-chart-1').innerHTML = '';
+        }
+
+        window.calculateMath = function() {
+            const key = document.getElementById('math-formula').value;
+            const data = MATH_DATA[key];
+            const vals = [];
+            for(let i=1; i<=data.inputs; i++) {
+                const v = parseFloat(document.getElementById(`math-input-${i}`).value);
+                if(isNaN(v)) { document.getElementById('math-result').value = "Invalid Input"; return; }
+                vals.push(v);
+            }
+
+            const rawRes = data.calc(vals);
+            const formatted = data.format(rawRes);
+            document.getElementById('math-result').value = formatted;
+
+            if (data.getChartData) {
+                const chartData = data.getChartData(vals);
+                google.charts.setOnLoadCallback(() => drawMathCharts(chartData));
+            }
+
+            saveToHistory(vals.join(', '), '', formatted, '', 'Math: ' + data.name);
+        };
+
+        // --- OTHER INITS ---
+        function initPhysics() {
+            const select = document.getElementById('physics-formula');
+            Object.keys(PHYSICS_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key; opt.textContent = PHYSICS_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updatePhysicsUI);
+            updatePhysicsUI();
+        }
+        function updatePhysicsUI() {
+            const key = document.getElementById('physics-formula').value;
+            const data = PHYSICS_DATA[key];
+            document.getElementById('phys-label-1').textContent = data.l1;
+            document.getElementById('phys-label-2').textContent = data.l2;
+            document.getElementById('phys-label-result').textContent = data.res;
+            document.getElementById('phys-result').value = '';
+        }
+        function initFinance() {
+            const select = document.getElementById('finance-formula');
+            Object.keys(FINANCE_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key; opt.textContent = FINANCE_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updateFinanceUI);
+            updateFinanceUI();
+        }
+        function updateFinanceUI() {
+            const key = document.getElementById('finance-formula').value;
+            const data = FINANCE_DATA[key];
+            const count = data.inputs;
+            if(count >= 1) document.getElementById('fin-label-1').textContent = data.l1;
+            if(count >= 2) document.getElementById('fin-label-2').textContent = data.l2;
+            const g3 = document.getElementById('fin-input-group-3');
+            if (count >= 3) { g3.style.display = 'block'; document.getElementById('fin-label-3').textContent = data.l3; } else { g3.style.display = 'none'; }
+            const g4 = document.getElementById('fin-input-group-4');
+            if (count >= 4) { g4.classList.remove('hidden'); document.getElementById('fin-label-4').textContent = data.l4; } else { g4.classList.add('hidden'); }
+            document.getElementById('fin-label-result').textContent = data.res;
+            document.getElementById('fin-result').value = '';
+            document.getElementById('fin-chart-1').innerHTML = '';
+            document.getElementById('fin-chart-2').innerHTML = '';
+        }
+        function initHealth() {
+            const select = document.getElementById('health-formula');
+            Object.keys(HEALTH_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key; opt.textContent = HEALTH_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updateHealthUI);
+            updateHealthUI();
+        }
+        function updateHealthUI() {
+            const key = document.getElementById('health-formula').value;
+            const data = HEALTH_DATA[key];
+            document.getElementById('health-gender-group').style.display = data.showGender ? 'block' : 'none';
+            document.getElementById('health-activity-group').style.display = data.showActivity ? 'block' : 'none';
+            document.getElementById('health-date-group').classList.toggle('hidden', !data.showDate);
+            document.getElementById('health-inputs-container').style.display = data.inputs > 0 ? 'block' : 'none';
+            if(data.inputs >= 1) document.getElementById('health-label-1').textContent = data.l1;
+            if(data.inputs >= 2) document.getElementById('health-label-2').textContent = data.l2;
+            if(data.inputs >= 3) { document.getElementById('health-input-group-3').classList.remove('hidden'); document.getElementById('health-label-3').textContent = data.l3; } else { document.getElementById('health-input-group-3').classList.add('hidden'); }
+            if(data.inputs >= 4) { document.getElementById('health-input-group-4').classList.remove('hidden'); document.getElementById('health-label-4').textContent = data.l4; } else { document.getElementById('health-input-group-4').classList.add('hidden'); }
+            document.getElementById('health-result').value = '';
+            document.getElementById('health-chart-1').innerHTML = '';
+            document.getElementById('health-chart-2').innerHTML = '';
+        }
+
+        // --- CALCULATION HANDLERS ---
+        window.calculatePhysics = function() {
+            const key = document.getElementById('physics-formula').value;
+            const v1 = parseFloat(document.getElementById('phys-input-1').value);
+            const v2 = parseFloat(document.getElementById('phys-input-2').value);
+            if (isNaN(v1) || isNaN(v2)) { document.getElementById('phys-result').value = "Invalid Input"; return; }
+            const result = PHYSICS_DATA[key].calc(v1, v2);
+            let formatted = (Math.abs(result) < 0.001 || Math.abs(result) > 10000) ? result.toExponential(3) : parseFloat(result.toFixed(4));
+            document.getElementById('phys-result').value = formatted;
+            saveToHistory(v1 + ', ' + v2, '', formatted, '', 'Physics: ' + PHYSICS_DATA[key].name);
+        };
+        window.calculateFinance = function() {
+            const key = document.getElementById('finance-formula').value;
+            const data = FINANCE_DATA[key];
+            const v1 = parseFloat(document.getElementById('fin-input-1').value);
+            const v2 = parseFloat(document.getElementById('fin-input-2').value);
+            const v3 = (data.inputs >= 3) ? parseFloat(document.getElementById('fin-input-3').value) : 0;
+            const v4 = (data.inputs >= 4) ? parseFloat(document.getElementById('fin-input-4').value) : 0;
+            if (isNaN(v1) || isNaN(v2) || (data.inputs >= 3 && isNaN(v3)) || (data.inputs >= 4 && isNaN(v4))) { document.getElementById('fin-result').value = "Invalid Input"; return; }
+            const result = data.calc(v1, v2, v3, v4);
+            const formatted = parseFloat(result.toFixed(2)); 
+            document.getElementById('fin-result').value = formatted;
+            if (data.getChartData) {
+                const chartData = data.getChartData(v1, v2, v3, v4, result);
+                google.charts.setOnLoadCallback(() => drawFinanceCharts(chartData));
+            }
+            saveToHistory([v1,v2,v3,v4].slice(0, data.inputs).join(', '), '', formatted, '', 'Finance: ' + data.name);
+        };
+        window.calculateHealth = function() {
+            const key = document.getElementById('health-formula').value;
+            const data = HEALTH_DATA[key];
+            const vals = [];
+            for(let i=1; i<=data.inputs; i++) {
+                const v = parseFloat(document.getElementById(`health-input-${i}`).value);
+                if(isNaN(v)) { document.getElementById('health-result').value = "Invalid Input"; return; }
+                vals.push(v);
+            }
+            const gender = document.getElementById('health-gender').value;
+            const activity = parseFloat(document.getElementById('health-activity').value);
+            const dateStr = document.getElementById('health-date').value;
+            if(data.showDate && !dateStr) { document.getElementById('health-result').value = "Select Date"; return; }
+            const rawRes = data.calc(vals, gender, activity, dateStr);
+            const formatted = data.format(rawRes);
+            document.getElementById('health-result').value = formatted;
+            if (data.getChartData) {
+                const chartData = data.getChartData(vals, gender, activity, dateStr, rawRes);
+                google.charts.setOnLoadCallback(() => drawHealthCharts(chartData));
+            }
+            saveToHistory(vals.join(', '), '', formatted, '', 'Health: ' + data.name);
+        };
+
+        // --- CONVERTER LOGIC (Unchanged but compact) ---
+        async function fetchCurrencyRates() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                if(data && data.rates) {
+                    const newUnits = {};
+                    ['USD','EUR','GBP','JPY','CAD','AUD','INR','CNY'].forEach(c => { if(data.rates[c]) newUnits[c] = { name: c, factor: data.rates[c] }; });
+                    UNIT_DATA['Currency'].units = newUnits;
+                    if(document.getElementById('category-select').value === 'Currency') updateUnits();
+                }
+            } catch(e) { console.error("Failed to fetch rates", e); }
+        }
+        function updateUnits(reset = false) {
+            const cat = document.getElementById('category-select').value;
+            const units = UNIT_DATA[cat].units;
+            const from = document.getElementById('from-unit');
+            const to = document.getElementById('to-unit');
+            from.innerHTML = ''; to.innerHTML = '';
+            Object.keys(units).forEach(k => {
+                const opt = (val, txt) => { const o = document.createElement('option'); o.value = val; o.textContent = txt; return o; };
+                from.appendChild(opt(k, units[k].name)); to.appendChild(opt(k, units[k].name));
+            });
+            if (reset && Object.keys(units).length > 1) to.value = Object.keys(units)[1];
+            calculateConverter();
+        }
+        window.calculateConverter = function() { // Renamed slightly to avoid clash
+            const cat = document.getElementById('category-select').value;
+            const val = parseFloat(document.getElementById('input-value').value);
+            if (isNaN(val)) { document.getElementById('output-value').value = ''; return; }
+            const fU = document.getElementById('from-unit').value;
+            const tU = document.getElementById('to-unit').value;
+            const d = UNIT_DATA[cat];
+            let res;
+            if (d.type === 'special') {
+                res = d.units[tU].fromBase(d.units[fU].toBase(val));
+            } else {
+                if(cat === 'Currency') res = (val / d.units[fU].factor) * d.units[tU].factor;
+                else res = val * (d.units[fU].factor / d.units[tU].factor);
+            }
+            const fmt = (Math.abs(res) < 1e-6 && res!==0) ? res.toExponential(4) : parseFloat(res.toPrecision(6));
+            document.getElementById('output-value').value = fmt;
+            saveToHistory(val, fU, fmt, tU, cat);
+        }
+        document.getElementById('category-select').addEventListener('change', () => updateUnits(true));
+        document.getElementById('from-unit').addEventListener('change', calculateConverter);
+        document.getElementById('to-unit').addEventListener('change', calculateConverter);
+        document.getElementById('input-value').addEventListener('input', calculateConverter);
+        document.getElementById('swap-btn').addEventListener('click', () => {
+            const f = document.getElementById('from-unit'); const t = document.getElementById('to-unit');
+            const tmp = f.value; f.value = t.value; t.value = tmp; calculateConverter();
+        });
+
+        // --- HISTORY & STATE ---
+        let currentUser = null;
+        let saveTimeout;
+        function saveToHistory(inVal, inUnit, outVal, outUnit, cat) {
+            if (!currentUser) return;
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                if (inVal === '' || (typeof inVal === 'number' && isNaN(inVal))) return;
+                try {
+                    await addDoc(collection(db, `artifacts/${appId}/users/${currentUser.uid}/conversion_results`), {
+                        inputVal: inVal, inputUnit: inUnit, outputVal: outVal, outputUnit: outUnit, category: cat, timestamp: serverTimestamp()
+                    });
+                } catch (err) { console.error("Error saving history:", err); }
+            }, 1500);
+        }
+
+        let unsubscribeHistory = null;
+        let currentHistoryIds = [];
+        const clearBtns = [
+            document.getElementById('clear-history'), document.getElementById('phys-clear-history'),
+            document.getElementById('fin-clear-history'), document.getElementById('health-clear-history'),
+            document.getElementById('math-clear-history')
+        ];
+        
+        // Wire up print buttons
+        document.querySelectorAll('button[id$="print-history"]').forEach(b => b.addEventListener('click', () => { window.focus(); window.print(); }));
+
+        // Wire up clear buttons
+        clearBtns.forEach(b => b.addEventListener('click', handleClearHistoryClick));
+
+        function initAuth() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('auth-text').textContent = `ID: ${user.uid.slice(0, 6)}...`;
+                    document.getElementById('auth-dot').className = "w-2 h-2 bg-green-500 rounded-full mr-2";
+                    setupHistoryListener(user.uid);
+                } else {
+                    signInAnonymously(auth).catch(e => console.error("Auth failed", e));
+                }
+            });
+        }
+
+        function setupHistoryListener(uid) {
+            unsubscribeHistory = onSnapshot(collection(db, `artifacts/${appId}/users/${uid}/conversion_results`), (snapshot) => {
+                const data = [];
+                snapshot.forEach(d => data.push({ id: d.id, ...d.data() }));
+                currentHistoryIds = data.map(i => i.id);
+                data.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                
+                // Render to ALL lists with filtering
+                renderHistoryList('history-list', data); // All
+                renderHistoryList('phys-history-list', data.filter(i => i.category.startsWith('Physics')));
+                renderHistoryList('fin-history-list', data.filter(i => i.category.startsWith('Finance')));
+                renderHistoryList('health-history-list', data.filter(i => i.category.startsWith('Health')));
+                renderHistoryList('math-history-list', data.filter(i => i.category.startsWith('Math')));
+
+                const isEmpty = data.length === 0;
+                clearBtns.forEach(b => {
+                    b.disabled = isEmpty;
+                    b.classList.toggle('opacity-50', isEmpty);
+                });
+                
+                // Toggle empty states
+                toggleEmpty('history', data.length === 0);
+                toggleEmpty('phys-history', data.filter(i => i.category.startsWith('Physics')).length === 0);
+                toggleEmpty('fin-history', data.filter(i => i.category.startsWith('Finance')).length === 0);
+                toggleEmpty('health-history', data.filter(i => i.category.startsWith('Health')).length === 0);
+                toggleEmpty('math-history', data.filter(i => i.category.startsWith('Math')).length === 0);
+            });
+        }
+
+        function toggleEmpty(prefix, isEmpty) {
+            document.getElementById(`${prefix}-loading`).classList.add('hidden');
+            document.getElementById(`${prefix}-empty`).classList.toggle('hidden', !isEmpty);
+        }
+
+        function renderHistoryList(elementId, items) {
+            const list = document.getElementById(elementId);
+            list.innerHTML = '';
+            items.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group border border-transparent hover:border-slate-200 dark:hover:border-slate-600';
+                
+                // Determine display units
+                let fromUnit = item.inputUnit, toUnit = item.outputUnit;
+                if(UNIT_DATA[item.category] && UNIT_DATA[item.category].units[fromUnit]) fromUnit = UNIT_DATA[item.category].units[fromUnit].name;
+                if(UNIT_DATA[item.category] && UNIT_DATA[item.category].units[toUnit]) toUnit = UNIT_DATA[item.category].units[toUnit].name;
+
+                el.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline gap-2">
+                            <span class="font-bold text-slate-700 dark:text-slate-200 truncate">${item.inputVal} <span class="text-xs font-normal text-slate-500">${fromUnit}</span></span>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-400"></i>
+                            <span class="font-bold text-brand-600 dark:text-brand-400 truncate">${item.outputVal} <span class="text-xs font-normal text-brand-500/70">${toUnit}</span></span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-0.5"><span class="uppercase tracking-wider font-semibold border border-slate-200 dark:border-slate-600 px-1 rounded">${item.category}</span></div>
+                    </div>
+                    <button class="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500 p-2" onclick="window.deleteItem('${item.id}')"><i class="fa-solid fa-trash-can"></i></button>
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        window.deleteItem = async (id) => { if(currentUser) await deleteDoc(doc(db, `artifacts/${appId}/users/${currentUser.uid}/conversion_results`, id)); };
+        
+        let clearTimer;
+        async function handleClearHistoryClick(e) {
+            const btn = e.target;
+            const isConfirming = btn.getAttribute('data-confirming') === 'true';
+            if (isConfirming) {
+                if(currentUser && currentHistoryIds.length > 0) {
+                    const batch = currentHistoryIds.map(id => deleteDoc(doc(db, `artifacts/${appId}/users/${currentUser.uid}/conversion_results`, id)));
+                    await Promise.all(batch);
+                }
+                clearBtns.forEach(b => { b.innerText = "Clear All"; b.removeAttribute('data-confirming'); b.classList.remove('bg-red-500', 'text-white'); });
+            } else {
+                clearBtns.forEach(b => { b.innerText = "Confirm?"; b.setAttribute('data-confirming', 'true'); b.classList.add('bg-red-500', 'text-white'); });
+                clearTimeout(clearTimer);
+                clearTimer = setTimeout(() => {
+                    clearBtns.forEach(b => { b.innerText = "Clear All"; b.removeAttribute('data-confirming'); b.classList.remove('bg-red-500', 'text-white'); });
+                }, 3000);
+            }
+        }
+        
+        window.copyResult = function() {
+            const output = document.getElementById('output-value');
+            if (output.value) {
+                const el = document.createElement('textarea');
+                el.value = output.value; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+                const icon = document.getElementById('copy-icon');
+                if(icon) { icon.classList.replace('fa-regular', 'fa-solid'); icon.classList.replace('fa-copy', 'fa-check'); icon.classList.add('text-green-500'); setTimeout(() => { icon.classList.replace('fa-solid', 'fa-regular'); icon.classList.replace('fa-check', 'fa-copy'); icon.classList.remove('text-green-500'); }, 1000); }
+            }
+        };
+
+        // Initialize UI
+        Object.keys(UNIT_DATA).forEach(cat => { const o = document.createElement('option'); o.value = cat; o.textContent = cat; document.getElementById('category-select').appendChild(o); });
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+        document.getElementById('theme-toggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); localStorage.setItem('color-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); });
+
+        initPhysics(); initFinance(); initHealth(); initMath();
+        initCharts(); initAuth(); updateUnits(true); fetchCurrencyRates();
+        switchView('home');
+
+    </script>
+</body>
+</html>
