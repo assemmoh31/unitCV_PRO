@@ -71,18 +71,19 @@
             #phys-history-section, #phys-history-section *,
             #fin-history-section, #fin-history-section *,
             #health-history-section, #health-history-section *,
-            #math-history-section, #math-history-section * {
+            #math-history-section, #math-history-section *,
+            #chem-history-section, #chem-history-section * {
                 visibility: visible;
             }
-            #history-section, #phys-history-section, #fin-history-section, #health-history-section, #math-history-section {
+            #history-section, #phys-history-section, #fin-history-section, #health-history-section, #math-history-section, #chem-history-section {
                 position: absolute; left: 0; top: 0; width: 100% !important; margin: 0 !important; padding: 0 !important;
                 border: none !important; box-shadow: none !important; height: auto !important; max-height: none !important;
                 background: white !important; color: black !important;
             }
-            #history-container, #phys-history-container, #fin-history-container, #health-history-container, #math-history-container {
+            #history-container, #phys-history-container, #fin-history-container, #health-history-container, #math-history-container, #chem-history-container {
                 height: auto !important; overflow: visible !important;
             }
-            #history-actions, #phys-history-actions, #fin-history-actions, #health-history-actions, #math-history-actions,
+            #history-actions, #phys-history-actions, #fin-history-actions, #health-history-actions, #math-history-actions, #chem-history-actions,
             .fa-trash-can, button[id$="clear-history"] {
                 display: none !important;
             }
@@ -167,13 +168,22 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400">BMI, BMR, Body Fat and Calories.</p>
             </div>
 
-            <!-- Math & Geometry (New) -->
+            <!-- Math & Geometry -->
             <div onclick="switchView('math')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-blue-500 dark:hover:border-blue-500 transition-all cursor-pointer group">
                 <div class="bg-blue-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-shapes text-xl"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Math & Geometry</h3>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Shapes, Areas, Volumes, Algebra & Trig.</p>
+            </div>
+
+            <!-- Chemistry / Material Science (New) -->
+            <div onclick="switchView('chem')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-orange-500 dark:hover:border-orange-500 transition-all cursor-pointer group">
+                <div class="bg-orange-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-flask text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Chemistry</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">pH, Molar Mass, Dilution, Density, Stoichiometry.</p>
             </div>
         </div>
 
@@ -451,6 +461,60 @@
             </div>
         </div>
 
+        <!-- VIEW 7: CHEMISTRY / MATERIALS (NEW) -->
+        <div id="view-chem" class="view-section gap-6 md:grid-cols-12">
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-flask text-orange-500"></i> Chemistry</h2>
+                        <select id="chem-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-orange-500 block p-2.5 font-medium cursor-pointer w-48"></select>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div id="chem-inputs-container" class="space-y-4">
+                            <!-- Text Input for Formulas (MW) -->
+                            <div id="chem-input-text-group" class="space-y-2 hidden">
+                                <label id="chem-label-text" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Chemical Formula</label>
+                                <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600">
+                                    <input type="text" id="chem-input-text" placeholder="e.g. C6H12O6" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-orange-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0 uppercase">
+                                </div>
+                            </div>
+                            <!-- Number Inputs -->
+                            <div id="chem-input-group-1" class="space-y-2"><label id="chem-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="chem-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-orange-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="chem-input-group-2" class="space-y-2"><label id="chem-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="chem-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-orange-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="chem-input-group-3" class="space-y-2 hidden"><label id="chem-label-3" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 3</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="chem-input-3" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-orange-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                        </div>
+                        <button onclick="calculateChem()" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">Calculate Result</button>
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="chem-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-orange-200 dark:ring-orange-900/50 bg-orange-50 dark:bg-orange-900/20">
+                                <input type="text" id="chem-result" readonly class="flex-1 bg-transparent border-none p-4 text-xl font-bold focus:ring-0 text-orange-600 dark:text-orange-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                        <div id="chem-chart-container" class="w-full mt-6 space-y-6 flex justify-center">
+                            <div id="chem-chart-1" class="w-full h-64"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Chem History -->
+            <div id="chem-history-section" class="md:col-span-12 lg:col-span-5 h-full relative history-print-title">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History</h3>
+                        <div id="chem-history-actions" class="flex items-center gap-2">
+                            <button id="chem-print-history" class="text-xs text-slate-500 hover:text-orange-600 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md"><i class="fa-solid fa-print"></i></button>
+                            <button id="chem-clear-history" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md disabled:opacity-50">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="chem-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <div id="chem-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10"><i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i></div>
+                        <div id="chem-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10"><i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i><p id="chem-history-empty-text" class="text-sm text-center">No calculations yet</p></div>
+                        <div id="chem-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Footer -->
@@ -507,6 +571,10 @@
                         if(window.lastMathChartData) drawMathCharts(window.lastMathChartData);
                         else if(window.lastMathSVG) drawMathSVG(window.lastMathSVG);
                     }
+                    if(viewName === 'chem') {
+                        if(window.lastChemChartData) drawChemCharts(window.lastChemChartData);
+                        else if(window.lastChemSVG) drawChemSVG(window.lastChemSVG);
+                    }
                 }, 10);
             }
 
@@ -520,7 +588,132 @@
             }
         };
 
-        // --- MATH CALCULATOR LOGIC (NEW) ---
+        // --- CHEMISTRY DATA & LOGIC ---
+        const ATOMIC_MASSES = {
+            H:1.008, He:4.0026, Li:6.94, Be:9.0122, B:10.81, C:12.011, N:14.007, O:15.999, F:18.998, Ne:20.180, 
+            Na:22.990, Mg:24.305, Al:26.982, Si:28.085, P:30.974, S:32.06, Cl:35.45, K:39.098, Ar:39.948, Ca:40.078, 
+            Sc:44.956, Ti:47.867, V:50.942, Cr:51.996, Mn:54.938, Fe:55.845, Co:58.933, Ni:58.693, Cu:63.546, Zn:65.38, 
+            Ga:69.723, Ge:72.630, As:74.922, Se:78.971, Br:79.904, Kr:83.798, Rb:85.468, Sr:87.62, Y:88.906, Zr:91.224, 
+            Nb:92.906, Mo:95.95, Tc:98, Ru:101.07, Rh:102.91, Pd:106.42, Ag:107.87, Cd:112.41, In:114.82, Sn:118.71, 
+            Sb:121.76, Te:127.60, I:126.90, Xe:131.29, Cs:132.91, Ba:137.33, La:138.91, Ce:140.12, Pr:140.91, Nd:144.24, 
+            Pm:145, Sm:150.36, Eu:151.96, Gd:157.25, Tb:158.93, Dy:162.50, Ho:164.93, Er:167.26, Tm:168.93, Yb:173.05, 
+            Lu:174.97, Hf:178.49, Ta:180.95, W:183.84, Re:186.21, Os:190.23, Ir:192.22, Pt:195.08, Au:196.97, Hg:200.59, 
+            Tl:204.38, Pb:207.2, Bi:208.98, Po:209, At:210, Rn:222, Fr:223, Ra:226, Ac:227, Th:232.04, Pa:231.04, U:238.03
+        };
+
+        function parseFormula(formula) {
+            const regex = /([A-Z][a-z]*)(\d*)/g;
+            let match;
+            const composition = {};
+            let totalMass = 0;
+            while ((match = regex.exec(formula)) !== null) {
+                const elem = match[1];
+                const count = parseInt(match[2] || 1);
+                const mass = ATOMIC_MASSES[elem];
+                if(mass) {
+                    composition[elem] = (composition[elem] || 0) + count;
+                    totalMass += mass * count;
+                }
+            }
+            return { totalMass, composition };
+        }
+
+        const CHEM_DATA = {
+            ph: {
+                name: 'pH → [H⁺] & [OH⁻]', l1: 'pH Value', inputs: 1,
+                calc: (v) => { 
+                    const h = Math.pow(10, -v[0]); 
+                    const oh = 1.0e-14 / h; 
+                    return `[H⁺]: ${h.toExponential(2)} M, [OH⁻]: ${oh.toExponential(2)} M`;
+                },
+                format: (v) => v,
+                getChartData: (v) => {
+                    const val = v[0];
+                    return { type: 'Gauge', data: [['Label', 'Value'], ['pH', val]], title: 'pH Level', max: 14, redFrom: 0, redTo: 6, yellowFrom: 6, yellowTo: 8, greenFrom: 8, greenTo: 14 };
+                }
+            },
+            dilution: {
+                name: 'Dilution (Calc V2)', l1: 'C1 (Initial)', l2: 'V1 (Initial)', l3: 'C2 (Final)', inputs: 3,
+                calc: (v) => { return (v[0] * v[1]) / v[2]; },
+                format: (v) => `V2 = ${v.toFixed(2)} units`,
+                draw: (v) => {
+                    const [c1, v1, c2] = v;
+                    const v2 = (c1 * v1) / c2;
+                    // Visual scale factor
+                    const maxV = Math.max(v1, v2);
+                    const h1 = (v1/maxV)*100;
+                    const h2 = (v2/maxV)*100;
+                    const op1 = Math.min(1, c1/10 + 0.2); // Visual opacity based on conc
+                    const op2 = Math.min(1, c2/10 + 0.2);
+                    return `<svg viewBox="0 0 200 150" class="w-full h-full"><rect x="30" y="${120-h1}" width="40" height="${h1}" fill="#3b82f6" fill-opacity="${op1}" stroke="#1e293b" stroke-width="2"/><text x="50" y="140" text-anchor="middle" font-size="10">Initial (V1=${v1})</text><text x="100" y="75" text-anchor="middle" font-size="20">➔</text><rect x="130" y="${120-h2}" width="40" height="${h2}" fill="#3b82f6" fill-opacity="${op2}" stroke="#1e293b" stroke-width="2"/><text x="150" y="140" text-anchor="middle" font-size="10">Final (V2=${v2.toFixed(1)})</text></svg>`;
+                }
+            },
+            mw: {
+                name: 'Molecular Weight', l1: '', inputs: 0, showText: true,
+                calc: (v, txt) => {
+                    const res = parseFormula(txt);
+                    return res.totalMass === 0 ? "Invalid Formula" : `${res.totalMass.toFixed(3)} g/mol`;
+                },
+                format: (v) => v,
+                getChartData: (v, txt) => {
+                    const res = parseFormula(txt);
+                    if(res.totalMass === 0) return null;
+                    const rows = [['Element', 'Mass %']];
+                    Object.keys(res.composition).forEach(el => {
+                        const mass = ATOMIC_MASSES[el] * res.composition[el];
+                        rows.push([el, mass]);
+                    });
+                    return { type: 'Pie', data: rows, title: 'Mass Composition' };
+                }
+            },
+            stoich: {
+                name: 'Mole Ratio (Reactant -> Product)', l1: 'Moles Reactant', l2: 'Coeff Reactant', l3: 'Coeff Product', inputs: 3,
+                calc: (v) => (v[0] / v[1]) * v[2],
+                format: (v) => `${v.toFixed(3)} moles Product`,
+                draw: (v) => `<div class="flex items-center justify-center h-full text-sm text-slate-500">Ratio: ${v[1]} : ${v[2]}</div>`
+            },
+            gibbs: {
+                name: 'Gibbs Free Energy (ΔG = ΔH - TΔS)', l1: 'ΔH (kJ)', l2: 'ΔS (J/K)', l3: 'Temp (K)', inputs: 3,
+                calc: (v) => v[0] - (v[2] * (v[1]/1000)), // Convert S to kJ
+                format: (v) => `ΔG = ${v.toFixed(2)} kJ`,
+                getChartData: (v) => {
+                    const [h, s, t] = v;
+                    const rows = [['Temp (K)', 'ΔG (kJ)']];
+                    for(let temp=Math.max(0, t-100); temp<=t+100; temp+=20) {
+                        rows.push([temp, h - (temp * s/1000)]);
+                    }
+                    return { type: 'Line', data: rows, title: 'Spontaneity vs Temp' };
+                }
+            },
+            density: {
+                name: 'Density (ρ = m/v)', l1: 'Mass (g)', l2: 'Volume (ml)', inputs: 2,
+                calc: (v) => v[0] / v[1],
+                format: (v) => `${v.toFixed(3)} g/ml`,
+                draw: (v) => {
+                    const d = v[0]/v[1];
+                    // Visual representation: Particles packed in a box
+                    const count = Math.min(50, Math.floor(d * 10)); 
+                    let dots = "";
+                    for(let i=0; i<count; i++) {
+                        const x = Math.random()*80 + 10;
+                        const y = Math.random()*80 + 10;
+                        dots += `<circle cx="${x}" cy="${y}" r="2" fill="#475569"/>`;
+                    }
+                    return `<svg viewBox="0 0 100 100" class="w-full h-full" style="max-width:150px; margin:0 auto;"><rect x="5" y="5" width="90" height="90" fill="none" stroke="#3b82f6" stroke-width="2"/>${dots}<text x="50" y="115" text-anchor="middle" font-size="10">Density Visual</text></svg>`;
+                }
+            },
+            heat: {
+                name: 'Specific Heat (q = mcΔT)', l1: 'Mass (g)', l2: 'Sp. Heat (J/g°C)', l3: 'Δ Temp (°C)', inputs: 3,
+                calc: (v) => v[0] * v[1] * v[2],
+                format: (v) => `Heat (q) = ${v.toFixed(2)} J`,
+                draw: (v) => {
+                    const color = v[2] > 0 ? "#ef4444" : "#3b82f6"; // Red for heating, blue for cooling
+                    return `<svg viewBox="0 0 200 60" class="w-full h-full"><rect x="10" y="20" width="180" height="20" rx="10" fill="#e2e8f0"/><rect x="10" y="20" width="180" height="20" rx="10" fill="${color}" fill-opacity="0.5"><animate attributeName="width" from="0" to="180" dur="1s" fill="freeze"/></rect><text x="100" y="55" text-anchor="middle" font-size="12" fill="#64748b">Energy Transfer</text></svg>`;
+                }
+            }
+        };
+
+        // --- MATH CALCULATOR LOGIC (Unchanged) ---
         const MATH_DATA = {
             circle: {
                 name: 'Circle Properties', l1: 'Radius (r)', inputs: 1,
@@ -547,29 +740,14 @@
                 format: (v) => typeof v === 'string' ? v : `${v.toFixed(2)} units²`,
                 draw: (v, container) => {
                     const [a, b, c] = v;
-                    // Scale triangle to fit 200x200 box
-                    // Coords: A=(0,0), B=(c,0), C=(x,y)
-                    // x = (b^2 + c^2 - a^2) / (2c)
-                    // y = sqrt(b^2 - x^2)
                     if((a+b<=c) || (a+c<=b) || (b+c<=a)) return `<div class="text-red-500 text-center">Invalid Triangle</div>`;
-                    
                     const x = (b*b + c*c - a*a) / (2*c);
                     const y = Math.sqrt(Math.abs(b*b - x*x));
-                    
-                    const maxX = Math.max(c, x);
-                    const minX = Math.min(0, x);
-                    const width = maxX - minX;
-                    const height = y;
-                    
+                    const maxX = Math.max(c, x); const minX = Math.min(0, x);
+                    const width = maxX - minX; const height = y;
                     const scale = 160 / Math.max(width, height);
-                    // Offset to center
-                    const offX = (200 - width*scale)/2 - minX*scale;
-                    const offY = (200 - height*scale)/2;
-
-                    const Ax = offX, Ay = 200-offY;
-                    const Bx = offX + c*scale, By = 200-offY;
-                    const Cx = offX + x*scale, Cy = 200-(offY + y*scale);
-
+                    const offX = (200 - width*scale)/2 - minX*scale; const offY = (200 - height*scale)/2;
+                    const Ax = offX, Ay = 200-offY; const Bx = offX + c*scale, By = 200-offY; const Cx = offX + x*scale, Cy = 200-(offY + y*scale);
                     return `<svg viewBox="0 0 200 200" class="w-full h-full"><polygon points="${Ax},${Ay} ${Bx},${By} ${Cx},${Cy}" fill="none" stroke="#3b82f6" stroke-width="2"/><text x="${(Ax+Bx)/2}" y="${Ay+15}" text-anchor="middle" fill="#64748b" font-size="10">c=${c}</text><text x="${(Ax+Cx)/2-10}" y="${(Ay+Cy)/2}" text-anchor="end" fill="#64748b" font-size="10">b=${b}</text><text x="${(Bx+Cx)/2+10}" y="${(By+Cy)/2}" text-anchor="start" fill="#64748b" font-size="10">a=${a}</text></svg>`;
                 }
             },
@@ -579,15 +757,9 @@
                 format: (v) => v,
                 draw: (v, container) => {
                     const l = v[0], w = v[1];
-                    // Max dimension 160
                     const ratio = l/w;
-                    let dl, dw;
-                    if(ratio > 1) { dl = 160; dw = 160/ratio; }
-                    else { dw = 160; dl = 160*ratio; }
-                    
-                    const x = (200-dl)/2;
-                    const y = (200-dw)/2;
-                    
+                    let dl, dw; if(ratio > 1) { dl = 160; dw = 160/ratio; } else { dw = 160; dl = 160*ratio; }
+                    const x = (200-dl)/2; const y = (200-dw)/2;
                     return `<svg viewBox="0 0 200 200" class="w-full h-full"><rect x="${x}" y="${y}" width="${dl}" height="${dw}" fill="none" stroke="#3b82f6" stroke-width="2"/><text x="${100}" y="${y-5}" text-anchor="middle" fill="#64748b" font-size="12">L=${l}</text><text x="${x+dl+5}" y="${100}" alignment-baseline="middle" fill="#64748b" font-size="12">W=${w}</text></svg>`;
                 }
             },
@@ -596,7 +768,6 @@
                 calc: (v) => Math.PI * v[0] * v[0] * v[1],
                 format: (v) => `${v.toFixed(2)} units³`,
                 draw: (v, container) => {
-                    // Simple pseudo-3D
                     return `<svg viewBox="0 0 200 200" class="w-full h-full"><ellipse cx="100" cy="50" rx="50" ry="15" fill="none" stroke="#3b82f6" stroke-width="2"/><line x1="50" y1="50" x2="50" y2="150" stroke="#3b82f6" stroke-width="2"/><line x1="150" y1="50" x2="150" y2="150" stroke="#3b82f6" stroke-width="2"/><path d="M50 150 A50 15 0 0 0 150 150" fill="none" stroke="#3b82f6" stroke-width="2"/><path d="M50 150 A50 15 0 0 1 150 150" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"/><text x="160" y="100" fill="#64748b" font-size="12">h=${v[1]}</text><line x1="100" y1="50" x2="150" y2="50" stroke="#ef4444" stroke-width="1"/><text x="110" y="40" fill="#64748b" font-size="10">r=${v[0]}</text></svg>`;
                 }
             },
@@ -628,7 +799,6 @@
                 getChartData: (v) => {
                     const [a, b, c] = v;
                     const rows = [['x', 'y']];
-                    // Vertex x = -b/2a
                     const vx = -b / (2*a);
                     const range = 10;
                     for(let x = vx - range; x <= vx + range; x+=1) {
@@ -693,6 +863,7 @@
                 if(window.lastFinanceChartData && document.getElementById('view-finance').style.display !== 'none') drawFinanceCharts(window.lastFinanceChartData);
                 if(window.lastHealthChartData && document.getElementById('view-health').style.display !== 'none') drawHealthCharts(window.lastHealthChartData);
                 if(window.lastMathChartData && document.getElementById('view-math').style.display !== 'none') drawMathCharts(window.lastMathChartData);
+                if(window.lastChemChartData && document.getElementById('view-chem').style.display !== 'none') drawChemCharts(window.lastChemChartData);
             });
         }
 
@@ -763,6 +934,22 @@
             container.style.display = 'block';
         }
 
+        function drawChemCharts(chartData) {
+            if(!chartData || !google.visualization) return;
+            window.lastChemChartData = chartData;
+            window.lastChemSVG = null;
+            drawGenericChart('chem-chart-1', chartData);
+            document.getElementById('chem-chart-1').style.display = 'block';
+        }
+
+        function drawChemSVG(svgString) {
+            window.lastChemSVG = svgString;
+            window.lastChemChartData = null;
+            const container = document.getElementById('chem-chart-1');
+            container.innerHTML = svgString;
+            container.style.display = 'block';
+        }
+
         // --- MATH INITIALIZATION ---
         function initMath() {
             const select = document.getElementById('math-formula');
@@ -817,6 +1004,77 @@
             }
 
             saveToHistory(vals.join(', '), '', formatted, '', 'Math: ' + data.name);
+        };
+
+        // --- CHEM INITIALIZATION ---
+        function initChem() {
+            const select = document.getElementById('chem-formula');
+            Object.keys(CHEM_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key; opt.textContent = CHEM_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updateChemUI);
+            updateChemUI();
+        }
+
+        function updateChemUI() {
+            const key = document.getElementById('chem-formula').value;
+            const data = CHEM_DATA[key];
+            const count = data.inputs;
+
+            document.getElementById('chem-label-1').textContent = data.l1 || 'Input 1';
+            document.getElementById('chem-label-2').textContent = data.l2 || 'Input 2';
+            
+            // Show/Hide Inputs
+            const showText = !!data.showText;
+            document.getElementById('chem-input-text-group').style.display = showText ? 'block' : 'none';
+            if(showText && data.l1 === '') document.getElementById('chem-label-text').textContent = 'Chemical Formula';
+
+            document.getElementById('chem-input-group-1').style.display = (!showText && count >= 1) ? 'block' : 'none';
+            document.getElementById('chem-input-group-2').style.display = (!showText && count >= 2) ? 'block' : 'none';
+            document.getElementById('chem-input-group-3').style.display = (!showText && count >= 3) ? 'block' : 'none';
+            
+            if(!showText && count >= 3) document.getElementById('chem-label-3').textContent = data.l3;
+
+            document.getElementById('chem-label-result').textContent = 'Result';
+            document.getElementById('chem-result').value = '';
+            document.getElementById('chem-chart-1').innerHTML = '';
+        }
+
+        window.calculateChem = function() {
+            const key = document.getElementById('chem-formula').value;
+            const data = CHEM_DATA[key];
+            const vals = [];
+            let textVal = '';
+
+            if (data.showText) {
+                textVal = document.getElementById('chem-input-text').value.trim();
+                if(!textVal) { document.getElementById('chem-result').value = "Enter Formula"; return; }
+            } else {
+                for(let i=1; i<=data.inputs; i++) {
+                    const v = parseFloat(document.getElementById(`chem-input-${i}`).value);
+                    if(isNaN(v)) { document.getElementById('chem-result').value = "Invalid Input"; return; }
+                    vals.push(v);
+                }
+            }
+
+            const rawRes = data.calc(vals, textVal);
+            const formatted = data.format(rawRes);
+            document.getElementById('chem-result').value = formatted;
+
+            // DRAWING LOGIC SWITCH
+            if (data.getChartData) {
+                const chartData = data.getChartData(vals, textVal);
+                if(chartData) google.charts.setOnLoadCallback(() => drawChemCharts(chartData));
+                else document.getElementById('chem-chart-1').innerHTML = '';
+            } else if (data.draw) {
+                const svg = data.draw(vals);
+                drawChemSVG(svg);
+            }
+
+            const inp = data.showText ? textVal : vals.join(', ');
+            saveToHistory(inp, '', formatted, '', 'Chem: ' + data.name);
         };
 
         // --- OTHER INITS ---
@@ -1014,7 +1272,7 @@
         const clearBtns = [
             document.getElementById('clear-history'), document.getElementById('phys-clear-history'),
             document.getElementById('fin-clear-history'), document.getElementById('health-clear-history'),
-            document.getElementById('math-clear-history')
+            document.getElementById('math-clear-history'), document.getElementById('chem-clear-history')
         ];
         
         // Wire up print buttons
@@ -1049,6 +1307,7 @@
                 renderHistoryList('fin-history-list', data.filter(i => i.category.startsWith('Finance')));
                 renderHistoryList('health-history-list', data.filter(i => i.category.startsWith('Health')));
                 renderHistoryList('math-history-list', data.filter(i => i.category.startsWith('Math')));
+                renderHistoryList('chem-history-list', data.filter(i => i.category.startsWith('Chem')));
 
                 const isEmpty = data.length === 0;
                 clearBtns.forEach(b => {
@@ -1062,6 +1321,7 @@
                 toggleEmpty('fin-history', data.filter(i => i.category.startsWith('Finance')).length === 0);
                 toggleEmpty('health-history', data.filter(i => i.category.startsWith('Health')).length === 0);
                 toggleEmpty('math-history', data.filter(i => i.category.startsWith('Math')).length === 0);
+                toggleEmpty('chem-history', data.filter(i => i.category.startsWith('Chem')).length === 0);
             });
         }
 
@@ -1133,7 +1393,7 @@
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
         document.getElementById('theme-toggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); localStorage.setItem('color-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); });
 
-        initPhysics(); initFinance(); initHealth(); initMath();
+        initPhysics(); initFinance(); initHealth(); initMath(); initChem();
         initCharts(); initAuth(); updateUnits(true); fetchCurrencyRates();
         switchView('home');
 
