@@ -72,18 +72,19 @@
             #fin-history-section, #fin-history-section *,
             #health-history-section, #health-history-section *,
             #math-history-section, #math-history-section *,
-            #chem-history-section, #chem-history-section * {
+            #chem-history-section, #chem-history-section *,
+            #eng-history-section, #eng-history-section * {
                 visibility: visible;
             }
-            #history-section, #phys-history-section, #fin-history-section, #health-history-section, #math-history-section, #chem-history-section {
+            #history-section, #phys-history-section, #fin-history-section, #health-history-section, #math-history-section, #chem-history-section, #eng-history-section {
                 position: absolute; left: 0; top: 0; width: 100% !important; margin: 0 !important; padding: 0 !important;
                 border: none !important; box-shadow: none !important; height: auto !important; max-height: none !important;
                 background: white !important; color: black !important;
             }
-            #history-container, #phys-history-container, #fin-history-container, #health-history-container, #math-history-container, #chem-history-container {
+            #history-container, #phys-history-container, #fin-history-container, #health-history-container, #math-history-container, #chem-history-container, #eng-history-container {
                 height: auto !important; overflow: visible !important;
             }
-            #history-actions, #phys-history-actions, #fin-history-actions, #health-history-actions, #math-history-actions, #chem-history-actions,
+            #history-actions, #phys-history-actions, #fin-history-actions, #health-history-actions, #math-history-actions, #chem-history-actions, #eng-history-actions,
             .fa-trash-can, button[id$="clear-history"] {
                 display: none !important;
             }
@@ -177,13 +178,22 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400">Shapes, Areas, Volumes, Algebra & Trig.</p>
             </div>
 
-            <!-- Chemistry / Material Science (New) -->
+            <!-- Chemistry -->
             <div onclick="switchView('chem')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-orange-500 dark:hover:border-orange-500 transition-all cursor-pointer group">
                 <div class="bg-orange-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-4 group-hover:scale-110 transition-transform">
                     <i class="fa-solid fa-flask text-xl"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Chemistry</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">pH, Molar Mass, Dilution, Density, Stoichiometry.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">pH, Molar Mass, Dilution, Density.</p>
+            </div>
+
+            <!-- Engineering (NEW) -->
+            <div onclick="switchView('eng')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-cyan-500 dark:hover:border-cyan-500 transition-all cursor-pointer group">
+                <div class="bg-cyan-50 dark:bg-slate-700 w-12 h-12 rounded-xl flex items-center justify-center text-cyan-600 dark:text-cyan-400 mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-microchip text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Engineering</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Electronics, Circuits, PCB, Fluid Mechanics.</p>
             </div>
         </div>
 
@@ -515,6 +525,53 @@
             </div>
         </div>
 
+        <!-- VIEW 8: ENGINEERING (NEW) -->
+        <div id="view-eng" class="view-section gap-6 md:grid-cols-12">
+            <div class="md:col-span-12 lg:col-span-7 space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <h2 class="font-semibold text-lg flex items-center gap-2"><i class="fa-solid fa-microchip text-cyan-500"></i> Engineering</h2>
+                        <select id="eng-formula" class="bg-slate-50 dark:bg-slate-700 border-none text-sm rounded-lg focus:ring-2 focus:ring-cyan-500 block p-2.5 font-medium cursor-pointer w-48"></select>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div id="eng-inputs-container" class="space-y-4">
+                            <div id="eng-input-group-1" class="space-y-2"><label id="eng-label-1" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 1</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="eng-input-1" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-cyan-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="eng-input-group-2" class="space-y-2"><label id="eng-label-2" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 2</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="eng-input-2" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-cyan-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="eng-input-group-3" class="space-y-2 hidden"><label id="eng-label-3" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 3</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="eng-input-3" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-cyan-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                            <div id="eng-input-group-4" class="space-y-2 hidden"><label id="eng-label-4" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Input 4</label><div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-600"><input type="number" id="eng-input-4" class="flex-1 bg-transparent border-none p-3 text-xl font-bold focus:ring-2 focus:ring-cyan-500 text-slate-800 dark:text-slate-100 placeholder-slate-300 min-w-0"></div></div>
+                        </div>
+                        <button onclick="calculateEng()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md active:scale-95">Calculate Result</button>
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <label id="eng-label-result" class="block mb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Result</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden ring-1 ring-cyan-200 dark:ring-cyan-900/50 bg-cyan-50 dark:bg-cyan-900/20">
+                                <input type="text" id="eng-result" readonly class="flex-1 bg-transparent border-none p-4 text-xl font-bold focus:ring-0 text-cyan-600 dark:text-cyan-400 cursor-default min-w-0" placeholder="-">
+                            </div>
+                        </div>
+                        <div id="eng-chart-container" class="w-full mt-6 space-y-6 flex justify-center">
+                            <div id="eng-chart-1" class="w-full h-64"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Eng History -->
+            <div id="eng-history-section" class="md:col-span-12 lg:col-span-5 h-full relative history-print-title">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 h-full flex flex-col max-h-[600px] lg:max-h-none">
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <h3 class="font-semibold flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> History</h3>
+                        <div id="eng-history-actions" class="flex items-center gap-2">
+                            <button id="eng-print-history" class="text-xs text-slate-500 hover:text-cyan-600 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium px-3 py-1.5 rounded-md"><i class="fa-solid fa-print"></i></button>
+                            <button id="eng-clear-history" class="text-xs text-red-500 hover:text-white hover:bg-red-500 border border-red-200 dark:border-red-900/50 font-medium px-3 py-1.5 rounded-md disabled:opacity-50">Clear All</button>
+                        </div>
+                    </div>
+                    <div id="eng-history-container" class="flex-1 overflow-y-auto p-4 space-y-3 relative">
+                        <div id="eng-history-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 z-10"><i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i></div>
+                        <div id="eng-history-empty" class="hidden h-full flex flex-col items-center justify-center text-slate-400 py-10"><i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i><p id="eng-history-empty-text" class="text-sm text-center">No calculations yet</p></div>
+                        <div id="eng-history-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Footer -->
@@ -575,6 +632,10 @@
                         if(window.lastChemChartData) drawChemCharts(window.lastChemChartData);
                         else if(window.lastChemSVG) drawChemSVG(window.lastChemSVG);
                     }
+                    if(viewName === 'eng') {
+                        if(window.lastEngChartData) drawEngCharts(window.lastEngChartData);
+                        else if(window.lastEngSVG) drawEngSVG(window.lastEngSVG);
+                    }
                 }, 10);
             }
 
@@ -585,6 +646,122 @@
             } else {
                 homeBtn.classList.remove('hidden');
                 homeBtn.classList.add('flex');
+            }
+        };
+
+        // --- ENGINEERING DATA (NEW) ---
+        const ENG_DATA = {
+            ohm: {
+                name: 'AC Impedance (RLC)', l1: 'R (Ω)', l2: 'L (H)', l3: 'C (F)', l4: 'Freq (Hz)', inputs: 4,
+                calc: (v) => {
+                    const [R, L, C, f] = v;
+                    const XL = 2 * Math.PI * f * L;
+                    const XC = 1 / (2 * Math.PI * f * C);
+                    const Z = Math.sqrt(R*R + (XL-XC)*(XL-XC));
+                    return Z;
+                },
+                format: (v) => `Z = ${v.toFixed(2)} Ω`,
+                draw: (v) => {
+                    const [R, L, C, f] = v;
+                    const XL = 2 * Math.PI * f * L;
+                    const XC = 1 / (2 * Math.PI * f * C);
+                    const netX = XL - XC;
+                    // Draw Phasor
+                    // Scale to box 200x200 centered 100,100
+                    const maxVal = Math.max(R, Math.abs(netX)) * 1.2 || 1;
+                    const scale = 80 / maxVal;
+                    const x2 = 100 + R*scale;
+                    const y2 = 100 - netX*scale; // SVG y is down
+                    return `<svg viewBox="0 0 200 200" class="w-full h-full"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b" /></marker></defs><line x1="20" y1="100" x2="180" y2="100" stroke="#cbd5e1" stroke-width="1" marker-end="url(#arrow)"/><line x1="100" y1="180" x2="100" y2="20" stroke="#cbd5e1" stroke-width="1" marker-end="url(#arrow)"/><line x1="100" y1="100" x2="${x2}" y2="${y2}" stroke="#3b82f6" stroke-width="2"/><text x="180" y="115" font-size="10" fill="#64748b">R</text><text x="110" y="20" font-size="10" fill="#64748b">X</text><text x="10" y="10" font-size="10" fill="#3b82f6">Z=${Math.sqrt(R*R+netX*netX).toFixed(1)}Ω</text></svg>`;
+                }
+            },
+            rc: {
+                name: 'RC Time Constant', l1: 'R (Ω)', l2: 'C (F)', l3: 'Volts (V)', inputs: 3,
+                calc: (v) => v[0] * v[1],
+                format: (v) => `τ = ${v.toExponential(2)} s`,
+                getChartData: (v) => {
+                    const [R, C, V] = v;
+                    const tau = R*C;
+                    const rows = [['Time (s)', 'Volts']];
+                    for(let t=0; t<=5*tau; t+=tau/5) {
+                        rows.push([t, V * (1 - Math.exp(-t/tau))]);
+                    }
+                    return { type: 'Line', data: rows, title: 'Capacitor Charge Curve' };
+                }
+            },
+            xl: {
+                name: 'Inductor Reactance', l1: 'Freq (Hz)', l2: 'L (H)', inputs: 2,
+                calc: (v) => 2 * Math.PI * v[0] * v[1],
+                format: (v) => `XL = ${v.toFixed(2)} Ω`,
+                draw: (v) => `<div class="flex items-center justify-center h-full"><svg viewBox="0 0 100 50" class="w-32"><path d="M10 25 q10 -20 20 0 t20 0 t20 0 t20 0" fill="none" stroke="#3b82f6" stroke-width="3"/></svg></div>`
+            },
+            bjt: {
+                name: 'BJT Bias (Fixed)', l1: 'Vcc (V)', l2: 'Rb (Ω)', l3: 'Rc (Ω)', l4: 'Beta', inputs: 4,
+                calc: (v) => {
+                    const [Vcc, Rb, Rc, beta] = v;
+                    const Ib = (Vcc - 0.7) / Rb;
+                    const Ic = beta * Ib;
+                    const Vce = Vcc - (Ic * Rc);
+                    return Vce; // Return Vce, display string in format
+                },
+                format: (res) => {
+                    // We need input vals here, but this design passes raw result. 
+                    // Let's rely on global state or re-calc for display? 
+                    // For simplicity, result is Vce. We can adjust calc to return object?
+                    // The standard handler expects number/string.
+                    return `Vce ≈ ${res.toFixed(2)} V`;
+                },
+                draw: (v) => `<svg viewBox="0 0 200 200" class="w-full h-full"><rect x="60" y="20" width="80" height="160" fill="none" stroke="#e2e8f0"/><circle cx="100" cy="100" r="30" fill="none" stroke="#3b82f6"/><line x1="70" y1="100" x2="100" y2="100" stroke="#3b82f6"/><line x1="100" y1="100" x2="120" y2="70" stroke="#3b82f6"/><line x1="100" y1="100" x2="120" y2="130" stroke="#3b82f6"/><text x="140" y="100" font-size="12" fill="#64748b">NPN</text></svg>`
+            },
+            led: {
+                name: 'LED Resistor', l1: 'Source V', l2: 'LED Vf', l3: 'LED If (A)', inputs: 3,
+                calc: (v) => (v[0] - v[1]) / v[2],
+                format: (v) => `R = ${v.toFixed(1)} Ω`,
+                draw: (v) => `<svg viewBox="0 0 200 100" class="w-full h-full"><rect x="10" y="40" width="10" height="20" fill="#3b82f6"/><line x1="20" y1="50" x2="60" y2="50" stroke="#3b82f6"/><path d="M60 45 l10 5 l-10 5 z" fill="#ef4444"/><line x1="70" y1="50" x2="100" y2="50" stroke="#3b82f6"/><rect x="100" y="45" width="40" height="10" fill="none" stroke="#3b82f6"/><line x1="140" y1="50" x2="190" y2="50" stroke="#3b82f6"/><text x="120" y="35" font-size="10" text-anchor="middle" fill="#64748b">Resistor</text></svg>`
+            },
+            pcb: {
+                name: 'PCB Trace Width (IPC-2221)', l1: 'Current (A)', l2: 'Temp Rise (°C)', l3: 'Thickness (oz)', inputs: 3,
+                calc: (v) => {
+                    const [I, dT, th] = v;
+                    // k=0.048 for external layers
+                    const area = Math.pow(I / (0.048 * Math.pow(dT, 0.44)), 1/0.725); // mils^2
+                    const thMils = th * 1.37; // 1 oz approx 1.37 mil
+                    const widthMils = area / thMils;
+                    return widthMils * 0.0254; // Convert mil to mm
+                },
+                format: (v) => `Width: ${v.toFixed(3)} mm`
+            },
+            awg: {
+                name: 'AWG to mm', l1: 'AWG Number', inputs: 1,
+                calc: (v) => 0.127 * Math.pow(92, (36 - v[0])/39),
+                format: (v) => `Dia: ${v.toFixed(3)} mm`
+            },
+            batt: {
+                name: 'Battery Life', l1: 'Capacity (mAh)', l2: 'Load (mA)', inputs: 2,
+                calc: (v) => (v[0] / v[1]) * 0.7, // 0.7 safety factor
+                format: (v) => `~${v.toFixed(1)} Hours`
+            },
+            reynolds: {
+                name: 'Reynolds Number', l1: 'Density (kg/m³)', l2: 'Velocity (m/s)', l3: 'Dia (m)', l4: 'Visc (Pa·s)', inputs: 4,
+                calc: (v) => (v[0] * v[1] * v[2]) / v[3],
+                format: (v) => `Re = ${v.toExponential(2)}`,
+                getChartData: (v, txt, res) => {
+                    const val = (v[0] * v[1] * v[2]) / v[3];
+                    // Cap gauge for visualization
+                    let displayVal = val;
+                    if(val > 5000) displayVal = 5000;
+                    return { type: 'Gauge', data: [['Label', 'Value'], ['Re', displayVal]], title: 'Flow Type', max: 5000, redFrom: 4000, redTo: 5000, yellowFrom: 2300, yellowTo: 4000, greenFrom: 0, greenTo: 2300 };
+                }
+            },
+            flow: {
+                name: 'Pipe Flow Rate', l1: 'Diameter (m)', l2: 'Velocity (m/s)', inputs: 2,
+                calc: (v) => Math.PI * Math.pow(v[0]/2, 2) * v[1],
+                format: (v) => `${v.toFixed(4)} m³/s`
+            },
+            pressure: {
+                name: 'Pressure Drop (Laminar)', l1: 'Visc (Pa·s)', l2: 'Length (m)', l3: 'Flow (m³/s)', l4: 'Radius (m)', inputs: 4,
+                calc: (v) => (8 * v[0] * v[1] * v[2]) / (Math.PI * Math.pow(v[3], 4)),
+                format: (v) => `ΔP = ${v.toExponential(2)} Pa`
             }
         };
 
@@ -864,6 +1041,7 @@
                 if(window.lastHealthChartData && document.getElementById('view-health').style.display !== 'none') drawHealthCharts(window.lastHealthChartData);
                 if(window.lastMathChartData && document.getElementById('view-math').style.display !== 'none') drawMathCharts(window.lastMathChartData);
                 if(window.lastChemChartData && document.getElementById('view-chem').style.display !== 'none') drawChemCharts(window.lastChemChartData);
+                if(window.lastEngChartData && document.getElementById('view-eng').style.display !== 'none') drawEngCharts(window.lastEngChartData);
             });
         }
 
@@ -949,6 +1127,79 @@
             container.innerHTML = svgString;
             container.style.display = 'block';
         }
+
+        function drawEngCharts(chartData) {
+            if(!chartData || !google.visualization) return;
+            window.lastEngChartData = chartData;
+            window.lastEngSVG = null;
+            drawGenericChart('eng-chart-1', chartData);
+            document.getElementById('eng-chart-1').style.display = 'block';
+        }
+
+        function drawEngSVG(svgString) {
+            window.lastEngSVG = svgString;
+            window.lastEngChartData = null;
+            const container = document.getElementById('eng-chart-1');
+            container.innerHTML = svgString;
+            container.style.display = 'block';
+        }
+
+        // --- ENG INITIALIZATION ---
+        function initEng() {
+            const select = document.getElementById('eng-formula');
+            Object.keys(ENG_DATA).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key; opt.textContent = ENG_DATA[key].name;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', updateEngUI);
+            updateEngUI();
+        }
+
+        function updateEngUI() {
+            const key = document.getElementById('eng-formula').value;
+            const data = ENG_DATA[key];
+            const count = data.inputs;
+
+            document.getElementById('eng-label-1').textContent = data.l1 || 'Input 1';
+            document.getElementById('eng-label-2').textContent = data.l2 || 'Input 2';
+            
+            document.getElementById('eng-input-group-2').style.display = count >= 2 ? 'block' : 'none';
+            document.getElementById('eng-input-group-3').style.display = count >= 3 ? 'block' : 'none';
+            if(count >= 3) document.getElementById('eng-label-3').textContent = data.l3;
+            document.getElementById('eng-input-group-4').style.display = count >= 4 ? 'block' : 'none';
+            if(count >= 4) document.getElementById('eng-label-4').textContent = data.l4;
+
+            document.getElementById('eng-label-result').textContent = 'Result';
+            document.getElementById('eng-result').value = '';
+            document.getElementById('eng-chart-1').innerHTML = '';
+        }
+
+        window.calculateEng = function() {
+            const key = document.getElementById('eng-formula').value;
+            const data = ENG_DATA[key];
+            const vals = [];
+            for(let i=1; i<=data.inputs; i++) {
+                const v = parseFloat(document.getElementById(`eng-input-${i}`).value);
+                if(isNaN(v)) { document.getElementById('eng-result').value = "Invalid Input"; return; }
+                vals.push(v);
+            }
+
+            const rawRes = data.calc(vals);
+            const formatted = data.format(rawRes);
+            document.getElementById('eng-result').value = formatted;
+
+            if (data.getChartData) {
+                const chartData = data.getChartData(vals);
+                if(chartData) google.charts.setOnLoadCallback(() => drawEngCharts(chartData));
+                else document.getElementById('eng-chart-1').innerHTML = '';
+            } else if (data.draw) {
+                const svg = data.draw(vals);
+                drawEngSVG(svg);
+            }
+
+            saveToHistory(vals.join(', '), '', formatted, '', 'Eng: ' + data.name);
+        };
 
         // --- MATH INITIALIZATION ---
         function initMath() {
@@ -1272,7 +1523,8 @@
         const clearBtns = [
             document.getElementById('clear-history'), document.getElementById('phys-clear-history'),
             document.getElementById('fin-clear-history'), document.getElementById('health-clear-history'),
-            document.getElementById('math-clear-history'), document.getElementById('chem-clear-history')
+            document.getElementById('math-clear-history'), document.getElementById('chem-clear-history'),
+            document.getElementById('eng-clear-history')
         ];
         
         // Wire up print buttons
@@ -1308,6 +1560,7 @@
                 renderHistoryList('health-history-list', data.filter(i => i.category.startsWith('Health')));
                 renderHistoryList('math-history-list', data.filter(i => i.category.startsWith('Math')));
                 renderHistoryList('chem-history-list', data.filter(i => i.category.startsWith('Chem')));
+                renderHistoryList('eng-history-list', data.filter(i => i.category.startsWith('Eng')));
 
                 const isEmpty = data.length === 0;
                 clearBtns.forEach(b => {
@@ -1322,6 +1575,7 @@
                 toggleEmpty('health-history', data.filter(i => i.category.startsWith('Health')).length === 0);
                 toggleEmpty('math-history', data.filter(i => i.category.startsWith('Math')).length === 0);
                 toggleEmpty('chem-history', data.filter(i => i.category.startsWith('Chem')).length === 0);
+                toggleEmpty('eng-history', data.filter(i => i.category.startsWith('Eng')).length === 0);
             });
         }
 
@@ -1393,7 +1647,7 @@
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
         document.getElementById('theme-toggle').addEventListener('click', () => { document.documentElement.classList.toggle('dark'); localStorage.setItem('color-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); });
 
-        initPhysics(); initFinance(); initHealth(); initMath(); initChem();
+        initPhysics(); initFinance(); initHealth(); initMath(); initChem(); initEng();
         initCharts(); initAuth(); updateUnits(true); fetchCurrencyRates();
         switchView('home');
 
